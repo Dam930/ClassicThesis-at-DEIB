@@ -11,24 +11,14 @@
 \let\cleardoublepage\relax
 
 \chapter*{Abstract}
-An abstract is a brief of a research article, thesis, review,
-conference proceeding or any in-depth analysis of a particular
-subject or discipline, and is often used to help the reader
-quickly ascertain the paper's purpose. When used, an abstract
-always appears at the beginning of a manuscript or typescript,
-acting as the point-of-entry for any given academic paper or
-patent application. Abstracting and indexing services for various
-academic disciplines are aimed at compiling a body of literature
-for that particular subject.
-
-Max 2200 characters, spaces included.
+In this thesis, we propose a novel Reinforcement Learning (\acs{RL}) algorithm consisting in a stochastic variance-reduced version of policy gradient for solving Markov Decision Processes (\acs{MDP}s).\newline
+Stochastic variance-reduced gradient (\acs{SVRG}) methods have proven to be very successful in supervised learning. However, their adaptation to policy gradient is not straightforward and needs to account for I) a non-concave objective function; II) approximations in the full gradient computation; and III) a non-stationary sampling process. The result is \acs{SVRPG}, a stochastic variance reduced policy gradient algorithm that leverages on importance weights to preserve the unbiasedness of the gradient estimate. Under standard assumptions on the \acs{MDP}, we provide convergence guarantees for \acs{SVRPG} with a convergence rate that is linear under increasing batch sizes. Finally, we suggest practical variants of \acs{SVRPG}, and we empirically evaluate them on continuous \acs{MDP}s.
 
 \vfill
 \newpage
 \pdfbookmark[1]{Sommario}{Sommario}
 \chapter*{Sommario}
-Per abstract si intende il sommario di un documento, senza l'aggiunta di interpretazioni e valutazioni. L'abstract si limita a riassumere, in un determinato numero di parole, gli aspetti fondamentali del documento esaminato. Solitamente ha forma "indicativo-schematica"; presenta cioé notizie sulla struttura del testo e sul percorso elaborativo dell'autore.
-
-Max 2200 caratteri compresi gli spazi.
+In questa tesi proponiamo un nuovo algoritmo nell'ambito del Reinforcement Learning (\acs{RL}). Questo algoritmo consiste  nella versione di stochastic variance-reduced del gradiente della politica per la risoluzione dei processi decisionali di Markov (\acs{MDP}s).\newline
+Il metodo di riduzione della varianza del gradiente, chiamato Stochastic variance-reduced gradient (\acs{SVRG}), ha avuto molto successo nell'ambito dell'apprendimento supervisionato. La sua adattazione nel contesto del gradiente della politica non è banale e necessita di alcune considerazioni: I) la funzione obiettivo non è concava; II) il full gradient deve essere necessariamente approssimato;  III) il processo di campionamento non è stazionario. Il risultato è \acs{SVRPG}, un algoritmo di riduzione della varianza del gradiente della politica che sfrutta gli importance weights per preservare la correttezza della stima del gradiente. Date le classiche assunzioni del \acs{MDP}, abbiamo fornito garanzie di convergenza per \acs{SVRPG} con un tasso di convergenza che è lineare al crescere della dimensione del batch. Infine abbiamo implementato una variante pratica di \acs{SVRPG}. Abbiamo valutato questa variante impiricamente  su dei \acs{MDP} cintinui.
 
 \endgroup
