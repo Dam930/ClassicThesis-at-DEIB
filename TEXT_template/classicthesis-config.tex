@@ -18,7 +18,7 @@
 % ****************************************************************
 \PassOptionsToPackage{eulerchapternumbers,
 					listings,
-					drafting,
+					%drafting,
 				 	pdfspacing,
 					floatperchapter,
 					%linedheaders,
@@ -44,8 +44,8 @@
 \newcommand{\myTitleIT}{Stochastic Variance Reduced Policy Gradient \xspace}
 \newcommand{\myFirstAuthorName}{Damiano Binaghi\xspace}
 \newcommand{\myMatrFirstAuthor}{858458\xspace}
-\newcommand{\mySecondAuthorName}{Canonaco Giuseppe\xspace}
-\newcommand{\myMatrSecondAuthor}{222222\xspace}
+\newcommand{\mySecondAuthorName}{Giuseppe Canonaco\xspace}
+\newcommand{\myMatrSecondAuthor}{852749\xspace}
 \newcommand{\mySupervisor}{Marcello Restelli\xspace} % relatore
 \newcommand{\myOtherSupervisor}{Matteo Papini\xspace} % co relatori
 \newcommand{\myOtherOtherSupervisor}{Matteo Pirotta\xspace}
@@ -63,6 +63,17 @@
 \newcommand{\myVersion}{version 1.0\xspace}
 \newcommand{\myAcademicYear}{Academic Year 2017-2018\xspace}
 \newcommand{\myAcademicYearIT}{Anno Accademico 2017-2018\xspace}
+
+%Commands from Pirotta, Restelli...
+\newcommand{\vtheta}{\boldsymbol{\theta}}
+\newcommand{\vTheta}{\boldsymbol{\Theta}}
+\newcommand{\realspace}{\mathbb R}      % realspace
+\newcommand{\pdim}{m}
+\newcommand{\transpose}[1]{{#1}^\texttt{T}}
+\newcommand{\EVV}[2][\ppvect \in \ppspace]{\EV_{#1}\left[{#2}\right]}
+\newcommand{\norm}[2][\infty]{\left\|#2\right\|_{#1}}
+
+
 
 % ********************************************************************
 % Setup, fine tuning, and useful commands
@@ -98,10 +109,12 @@
 % **********************************************************************
 % 3. Loading some handy packages
 % **********************************************************************
-\PassOptionsToPackage{T1}{fontenc} % T2A for cyrillics
-	\usepackage{fontenc} 
-\PassOptionsToPackage{utf8}{inputenc} % latin9 (ISO-8859-9) = latin1+"Euro sign"
-	\usepackage{inputenc}				
+\PassOptionsToPackage{fleqn}{amsmath} % math environments and more by the AMS 
+\usepackage{amsmath}
+
+\usepackage{amsthm}
+\usepackage{amssymb}
+\renewcommand\qedsymbol{$\blacksquare$}		
 
 \PassOptionsToPackage{autostyle,italian=guillemets,threshold=2}{csquotes}
  	\usepackage{csquotes}
