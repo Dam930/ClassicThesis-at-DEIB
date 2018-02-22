@@ -35,10 +35,30 @@
 \setboolean{enable-backrefs}{false} % true false
 % TODO backref is incompatible?
 % ****************************************************************
+%*********************************************************************************
+% 2.a Math
+%*********************************************************************************
+\PassOptionsToPackage{fleqn}{amsmath} % math environments and more by the AMS 
+\usepackage{amsmath,amssymb}
+
+\usepackage{amsthm}
+\usepackage{amssymb}
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{theorem}{Theorem}[chapter]
+
+\theoremstyle{plain}
+\newtheorem{observation}[definition]{Observation}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+% **********************************************************************
+
 
 
 % ****************************************************************
-% 2. Personal data and user ad-hoc commands
+% 3. Personal data and user ad-hoc commands
 % ****************************************************************
 \newcommand{\myTitle}{Stochastic Variance Reduced Policy Gradient\xspace}
 \newcommand{\myTitleIT}{Stochastic Variance Reduced Policy Gradient \xspace}
@@ -93,6 +113,62 @@
 \newcommand{\myEmph}[1]{\textsc{#1}}
 
 % **********************************************************************
+%%%CUSTOM COMMANDS%%%
+%***********************************************************************
+%Math
+\newcommand{\realspace}{\mathbb R}      % realspace
+\newcommand{\transpose}[1]{{#1}^\texttt{T}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\EV}{\mathbb{E}}
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator*{\Cov}{\mathbb{C}ov}
+\DeclareMathOperator*{\Var}{\mathbb{V}ar}
+\newcommand{\EVV}[2][\ppvect \in \ppspace]{\EV_{#1}\left[{#2}\right]}
+\newcommand{\norm}[2][\infty]{\left\|#2\right\|_{#1}}
+\newcommand{\Dij}[2]{\frac{\partial^{2}{#1}}{\partial{#2}_i\partial{#2}_j}}
+\newcommand{\de}{\,\mathrm{d}}
+\newcommand{\dotprod}[2]{\left\langle#1,#2\right\rangle}
+\newcommand{\dnabla}{\nabla\!\!\!\!\nabla}
+%RL
+\newcommand{\vtheta}{\boldsymbol{\theta}}
+\newcommand{\Aspace}{\mathcal{A}}
+\newcommand{\Sspace}{\mathcal{S}}
+\newcommand{\Tspace}{\mathcal{T}}
+\newcommand{\Transition}{\mathcal{P}}
+\newcommand{\Reward}{\mathcal{R}}
+\newcommand{\stationary}{d_{\rho}^{\pi_{\vtheta}}(s)}
+\newcommand{\policy}{\pi_{\vtheta}(a \vert s)}
+\newcommand{\pol}{\pi_{\vtheta}}
+\newcommand{\trajdistr}{\pi_{\vtheta}(\tau)}
+\newcommand{\score}[2]{\nabla\log p_{#1}(#2)}
+\newcommand{\Qfun}{Q^{\pi_{\vtheta}}(s,a)}
+\newcommand{\Vfun}{V^{\pi_{\vtheta}}(s)}
+\newcommand{\vTheta}{\boldsymbol{\Theta}}
+\newcommand{\vphi}{\boldsymbol{\phi}}
+\newcommand{\gradJ}[1]{\nabla J(#1)}
+\newcommand{\gradApp}[2]{\widehat{\nabla}_{#2}J(#1)}
+\newcommand{\eqdef}{\mathrel{\mathop:}=}
+\newcommand{\Dataset}{\mathcal{D}}
+%Specific
+\newcommand{\Ets}[2][t]{\mathbb{E}_{#1\vert s}\left[#2\right]}
+\newcommand{\Es}[1]{\mathbb{E}_{s}\left[#1\right]}
+\newcommand{\Covts}[3][t]{{\mathbb{C}\text{ov}}_{#1\vert s}\left(#2,#3\right)}
+\newcommand{\Covs}[2]{{\mathbb{C}\text{ov}}_{s}\left(#1,#2\right)}
+\newcommand{\Varts}[2][t]{{\mathbb{V}\text{ar}}_{#1\vert s}\left[#2\right]}
+\newcommand{\Vars}[1]{{\mathbb{V}\text{ar}}_{s}\left[#1\right]}
+\newcommand{\gradBlack}[1]{\blacktriangledown J(#1)}
+\newcommand{\gradIdeal}[1]{\dnabla J(#1)}
+\newcommand{\VARRF}{V}
+\newcommand{\GRADLOG}{G}
+\newcommand{\VARIS}{W}
+\newcommand{\HESSLOG}{F}
+% short forms 
+\newcommand{\wt}[1]{\widetilde{#1}}
+\newcommand{\wh}[1]{\widehat{#1}}
+\newcommand{\wo}[1]{\overline{#1}}
+\newcommand{\wb}[1]{\overline{#1}}
+%%%%%%
 
 
 % **********************************************************************
@@ -120,26 +196,36 @@
 \PassOptionsToPackage{printonlyused,smaller}{acronym}
 	\usepackage{acronym} % nice macros for handling all acronyms in the thesis
 % **********************************************************************
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
 
-%*********************************************************************************
-% 3.a Math
-%*********************************************************************************
-\PassOptionsToPackage{fleqn}{amsmath} % math environments and more by the AMS 
- 	\usepackage{amsmath}
- 
-\usepackage{amsthm}
-\usepackage{amssymb}
-\renewcommand\qedsymbol{$\blacksquare$}
 
-\theoremstyle{definition}
-\newtheorem{definition}{Definition}[chapter]
-\newtheorem{theorem}{Theorem}[chapter]
+\usepackage{microtype}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+%\usepackage{subfigure}
+\usepackage{booktabs} % for professional tables
 
-\theoremstyle{plain}
-\newtheorem{observation}[definition]{Observation}
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{lemma}[theorem]{Lemma}
-% **********************************************************************
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2018} with \usepackage[nohyperref]{icml2018} above.
+\usepackage{hyperref}
+%%%USEFUL PACKAGES%%%
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{mathtools}
+\usepackage{pifont}
+\usepackage[makeroom]{cancel}
+\usepackage{placeins}
+
+%e.g. ...
+\usepackage{xspace}
+\DeclareRobustCommand{\eg}{e.g.,\@\xspace}
+\DeclareRobustCommand{\ie}{i.e.,\@\xspace}
+\DeclareRobustCommand{\wrt}{w.r.t.\@\xspace}
+
 
 
 % **********************************************************************
