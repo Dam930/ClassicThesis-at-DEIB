@@ -1,18 +1,56 @@
-\chapter{Practical guide to \enquote{ClassicThesis at DEIB}}
-\label{chap:conclusion}
-This template is ready to be used when writing a thesis at \myDepartment.
-It is a modified version of Classic Thesis by Andr\'e Miede that can be found here \url{http://code.google.com/p/classicthesis/}.
+\chapter{State of the art}\label{chap:art}
 
-\section{Learn \LaTeX}
-\LaTeX\ is a document preparation system and document markup language.
-It is widely used for the communication and publication of scientific documents in many fields, including mathematics, physics, computer science, statistics, economics, and political science.
+\vspace{-0.05in}
+In this section, we provide the essential background on policy gradient methods and stochastic variance-reduced gradient methods for finite-sum optimization.
+\vspace{-0.05in}
 
-\LaTeX\ users are weird people who care about the ligature between \enquote{f} and \enquote{i} and gets pissed off every time they look at a MS Word document.
-Nevertheless, they can explain themselves very well as shown in some beautiful guides for the \LaTeX\ world.
-Our preferred one for beginners is \enquote{The Not So Short Introduction to \LaTeXe}, which can be found \href{http://www.ctan.org/pkg/lshort}{here}.\footnote{\url{http://www.ctan.org/pkg/lshort}}
-For italians we also strongly suggest \enquote{L'arte di scrivere con \LaTeX}, that can be found \href{http://www.lorenzopantieri.net/LaTeX_files/ArteLaTeX.pdf}{here}.\footnote{\url{http://www.lorenzopantieri.net/LaTeX_files/ArteLaTeX.pdf}}
-It contains everything needed, however I suggest the reading of chapter 3 for a short introduction. \enquote{ClassicThesis} is another guide of the same author that can be useful, download it \href{http://www.lorenzopantieri.net/LaTeX_files/ClassicThesis.pdf}{here}.\footnote{\url{http://www.lorenzopantieri.net/LaTeX_files/ClassicThesis.pdf}}
+\section{Policy Gradient}\label{sec:PolicyGradient}
+\vspace{-0.05in}
+A Reinforcement Learning task~\citep{sutton1998reinforcement} can be modelled with a discrete-time continuous Markov Decision Process (MDP) $M = \{\Sspace,\Aspace,\Transition,\Reward,\gamma,\rho\}$, where $\Sspace$ is a continuous state space; $\Aspace$ is a continuous action space; $\Transition$ is a Markovian transition model, where $\Transition(s'|s,a)$ defines the transition density from state $s$ to $s'$ under action $a$; $\Reward$ is the reward function, where $\Reward(s,a) \in [-R,R]$ is the expected reward for state-action pair $(s,a)$;
+% and $R$ is the maximum absolute-value reward;
+$\gamma\in[0,1)$ is the discount factor; and $\rho$ is the initial state distribution.
+The agent's behaviour is modelled as a policy $\pi$, where $\pi(\cdot|s)$ is the density distribution over $\Aspace$ in state $s$.
+% We consider episodic tasks, \ie tasks composed of episodes of length $H$, also called time horizon.
+% In this setting, a trajectory $\tau$ is the sequence of states and actions $(s_0,a_0,s_1,a_1,\dots,s_{H-1},a_{H-1})$ observed by following some stationary policy in a given episode, where $s_0$ is always sampled from the initial state distribution $\rho$.
+We consider episodic MDPs with effective horizon $H$.\footnote{The episode duration is a random variable, but the optimal policy can reach the target state (\ie absorbing state) in at most $H$ steps. This has not to be confused with a finite horizon problem where the optimal policy is non-stationary.} In this setting, we can limit our attention to trajectories of length $H$. A trajectory $\tau$ is a sequence of states and actions $(s_0,a_0,s_1,a_1,\dots,s_{H-1},a_{H-1})$ observed by following a stationary policy, where $s_0 \sim \rho$.
+We denote with $p(\tau|\pi)$ the density distribution induced by policy $\pi$ on the set $\Tspace$ of all possible trajectories (see Appendix~\ref{A:gradient_estimators} for the definition), and with $\Reward(\tau)$ the total discounted reward provided by trajectory $\tau$:
+%
+$\Reward(\tau) = \sum_{t=0}^{H-1}\gamma^t\Reward(s_t,a_t).$
+%
+Policies can be ranked based on their expected total reward: $J(\pi) = \EVV[\tau \sim p(\cdot|\pi)]{\Reward(\tau)|M}$.
+Solving an MDP $M$ means finding $\pi^* \in \argmax_{\pi} \{J(\pi)\}$.
 
+Policy gradient methods restrict the search for the best performing policy over a class of parametrized policies $\Pi_{\vtheta}=\{\pol: \vtheta \in \realspace^d\}$, with the only constraint that $\pol$ is differentiable \wrt $\vtheta$. For sake of brevity, we will denote the performance of a parametric policy with $J(\vtheta)$ and the probability of a trajectory $\tau$ with $p(\tau|\vtheta)$ (in some occasions, $p(\tau|\vtheta)$ will be replaced by $p_{\vtheta}(\tau)$ for the sake of readability).
+The search for a locally optimal policy is performed through gradient ascent, where the policy gradient
+%of $J(\vtheta)$ \wrt the policy parameters 
+is \cite{sutton2000policy, Peters2008reinf}:
+\begin{align} \label{E:policygradient}
+	\gradJ{\vtheta} = \EVV[\tau \sim p(\cdot|\vtheta)]{\score{\vtheta}{\tau}\Reward(\tau)}.
+	%\int_{\Tspace}\pol(\tau)\score{\vtheta}{\tau}\Reward(\tau)\de \tau.
+\end{align}
+Notice that the distribution defining the gradient is induced by the current policy. This aspect introduces a nonstationarity in the sampling process. Since the underlying distribution changes over time, it is necessary to resample at each update or use weighting techniques such as importance sampling.
+Here, we consider the \emph{online learning scenario}, where trajectories are sampled by interacting with the environment at each policy change. 
+In this setting, stochastic gradient ascent is typically employed.
+At each iteration $k >0$, a batch $\mathcal{D}_N^k = \{\tau_i\}_{i=0}^N$ of $N>0$ trajectories is collected using policy $\pi_{\vtheta_k}$.
+The policy is then updated as $\vtheta_{k+1}  = \vtheta_k + \alpha\gradApp{\vtheta_k}{N}$, where $\alpha$ is a step size and $\gradApp{\vtheta}{N}$ is an estimate of Eq.~\eqref{E:policygradient} using $\mathcal{D}_N^k$. The most common policy gradient estimators (\eg REINFORCE~\citep{williams1992simple} and G(PO)MDP~\citep{baxter2001infinite}) can be expressed as follows
+\begin{align} \label{E:policygradient.estimate}
+	\gradApp{\vtheta}{N} = \frac{1}{N}\sum_{n=1}^{N} g(\tau_i|\vtheta), \quad \tau_i \in \mathcal{D}_N^k,
+\end{align}
+where $g(\tau_i|\vtheta)$ is an estimate of $\score{\vtheta}{\tau_i}\Reward(\tau_i)$.
+Although the REINFORCE definition is simpler than the G(PO)MDP one, the latter is usually preferred due to its lower variance.
+We refer the reader to Appendix~\ref{A:gradient_estimators} for details and a formal definition of $g$.
+
+The main limitation of plain policy gradient is the high variance of these estimators.
+The na\"ive approach of increasing the batch size is not an option in RL due to the high cost of collecting samples, \ie by interacting with the environment.
+For this reason, literature has focused on the introduction of baselines (\ie functions $b : \mathcal{S} \times \mathcal{A} \to \realspace$) aiming to reduce the variance~\citep[\eg][]{williams1992simple,Peters2008reinf,Thomas2017actionbaseline,wu2018variance}, see Appendix~\ref{A:gradient_estimators} for a formal definition of $b$.
+These baselines are usually designed to minimize the variance of the gradient estimate, but even them need to be estimated from data, partially reducing their effectiveness.
+On the other hand, there has been a surge of recent interest in variance reduction techniques for gradient optimization in supervised learning (SL).
+Although these techniques have been mainly derived for finite-sum problems, we will show in Section~\ref{sec:alg} how they can be used in RL.
+In particular, we will show that the proposed SVRPG algorithm can take the best of both worlds (\ie SL and RL) since it can be plugged into a policy gradient estimate using baselines.
+The next section has the aim to describe variance reduction techniques for finite-sum problems. In particular, we will present the SVRG algorithm that is at the core of this work.
+
+
+\vspace{-0.05in}
 \section{Install \LaTeX}
 If you don't have already a \LaTeX\ system installed, this section will explain everything you need.
 The easiest way to get \LaTeX\ is to install TeXLive, which works on all \acp{OS}.
