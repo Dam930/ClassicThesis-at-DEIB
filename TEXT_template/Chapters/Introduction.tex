@@ -1,5 +1,9 @@
 \chapter{INTRODUCTION} \label{chap:aChapter}
 
-Reinforcement Learning \ac{RL} is a field of machine learning that aims at building intelligent machines, called agent, capable of learning complex tasks from experience.
+\ac{RL} is a field of machine learning that aims at building intelligent machines, called agent, capable of learning complex tasks from experience.
 The goal of \acs{RL} \cite{sutton1998reinforcement} algorithm is to learn the best actions by direct interaction with the environment and evaluation of the performance in the form of a reward signal.
-
+When the tasks are represented by a continuous state-action spaces a difficulty is to estimate the policy gradient from the few sample we can obtain:  The sample of data may even be infinite. Sub-sampling of data is a source of variance that can potentially compromise convergence, so that per-iteration efficiency and convergence rate must be traded off with proper handling of meta-parameters.
+The aim of this thesis is to develop a novel approach for reducing the variance of policy gradient's estimate using the \acs{SVRG}\cite{allen2016variance} technique that has proven to be very successful in \ac{SL}.\newline
+Variance-reduced gradient algorithms just used in \acs{SL} are SAG \cite{roux2012stochastic}, SVRG \cite{allen2016variance} and SAGA \cite{defazio2014saga}.
+Continuous domains are common in automatic control and robotic applications. Traditional RL algorithms, based on value functions, fer from many problems when applied to such continuous tasks, the most serious being the lack of strong theoretical guarantees. Policy gradient methods, besides guaranteeing convergence to locally optimal policies \cite{sutton2000policy}, are able to address many of the difficulties that characterize complex control problems, such as high dimensional state that leads to an infinite space of the cases of interest. 
+Among RL approaches, policy gradient is also the one that bears the closest similarity to \acs{SL} solutions. The fundamental principle of these methods is to optimize a parametric policy through stochastic gradient ascent (\acs{SG}).
