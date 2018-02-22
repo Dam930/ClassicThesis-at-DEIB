@@ -11,4 +11,5 @@
 *.gz
 *.toc
 *.fdb_latexmk
+*.pdf
 ClassicThesis_DEIB.fls
