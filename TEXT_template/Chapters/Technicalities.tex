@@ -6,19 +6,19 @@ In this section, we provide the essential background on policy gradient methods 
 
 \section{Policy Gradient}\label{sec:PolicyGradient}
 \vspace{-0.05in}
-A Reinforcement Learning task~\citep{sutton1998reinforcement} can be modelled with a discrete-time continuous Markov Decision Process (MDP) $M = \{\Sspace,\Aspace,\Transition,\Reward,\gamma,\rho\}$, where $\Sspace$ is a continuous state space; $\Aspace$ is a continuous action space; $\Transition$ is a Markovian transition model, where $\Transition(s'|s,a)$ defines the transition density from state $s$ to $s'$ under action $a$; $\Reward$ is the reward function, where $\Reward(s,a) \in [-R,R]$ is the expected reward for state-action pair $(s,a)$;
+A Reinforcement Learning task~\citep{sutton1998reinforcement} can be modelled with a discrete-time continuous \acs{MDP} $M = \{\Sspace,\Aspace,\Transition,\Reward,\gamma,\rho\}$, where $\Sspace$ is a continuous state space; $\Aspace$ is a continuous action space; $\Transition$ is a Markovian transition model, where $\Transition(s'|s,a)$ defines the transition density from state $s$ to $s'$ under action $a$; $\Reward$ is the reward function, where $\Reward(s,a) \in [-R,R]$ is the expected reward for state-action pair $(s,a)$;
 % and $R$ is the maximum absolute-value reward;
 $\gamma\in[0,1)$ is the discount factor; and $\rho$ is the initial state distribution.
 The agent's behaviour is modelled as a policy $\pi$, where $\pi(\cdot|s)$ is the density distribution over $\Aspace$ in state $s$.
 % We consider episodic tasks, \ie tasks composed of episodes of length $H$, also called time horizon.
 % In this setting, a trajectory $\tau$ is the sequence of states and actions $(s_0,a_0,s_1,a_1,\dots,s_{H-1},a_{H-1})$ observed by following some stationary policy in a given episode, where $s_0$ is always sampled from the initial state distribution $\rho$.
-We consider episodic MDPs with effective horizon $H$.\footnote{The episode duration is a random variable, but the optimal policy can reach the target state (\ie absorbing state) in at most $H$ steps. This has not to be confused with a finite horizon problem where the optimal policy is non-stationary.} In this setting, we can limit our attention to trajectories of length $H$. A trajectory $\tau$ is a sequence of states and actions $(s_0,a_0,s_1,a_1,\dots,s_{H-1},a_{H-1})$ observed by following a stationary policy, where $s_0 \sim \rho$.
+We consider episodic \acs{MDP}s with effective horizon $H$.\footnote{The episode duration is a random variable, but the optimal policy can reach the target state (\ie absorbing state) in at most $H$ steps. This has not to be confused with a finite horizon problem where the optimal policy is non-stationary.} In this setting, we can limit our attention to trajectories of length $H$. A trajectory $\tau$ is a sequence of states and actions $(s_0,a_0,s_1,a_1,\dots,s_{H-1},a_{H-1})$ observed by following a stationary policy, where $s_0 \sim \rho$.
 We denote with $p(\tau|\pi)$ the density distribution induced by policy $\pi$ on the set $\Tspace$ of all possible trajectories (see Appendix~\ref{A:gradient_estimators} for the definition), and with $\Reward(\tau)$ the total discounted reward provided by trajectory $\tau$:
 %
 $\Reward(\tau) = \sum_{t=0}^{H-1}\gamma^t\Reward(s_t,a_t).$
 %
 Policies can be ranked based on their expected total reward: $J(\pi) = \EVV[\tau \sim p(\cdot|\pi)]{\Reward(\tau)|M}$.
-Solving an MDP $M$ means finding $\pi^* \in \argmax_{\pi} \{J(\pi)\}$.
+Solving an \acs{MDP} $M$ means finding $\pi^* \in \argmax_{\pi} \{J(\pi)\}$.
 
 Policy gradient methods restrict the search for the best performing policy over a class of parametrized policies $\Pi_{\vtheta}=\{\pol: \vtheta \in \realspace^d\}$, with the only constraint that $\pol$ is differentiable \wrt $\vtheta$. For sake of brevity, we will denote the performance of a parametric policy with $J(\vtheta)$ and the probability of a trajectory $\tau$ with $p(\tau|\vtheta)$ (in some occasions, $p(\tau|\vtheta)$ will be replaced by $p_{\vtheta}(\tau)$ for the sake of readability).
 The search for a locally optimal policy is performed through gradient ascent, where the policy gradient
@@ -51,43 +51,37 @@ The next section has the aim to describe variance reduction techniques for finit
 
 
 \vspace{-0.05in}
-\section{Install \LaTeX}
-If you don't have already a \LaTeX\ system installed, this section will explain everything you need.
-The easiest way to get \LaTeX\ is to install TeXLive, which works on all \acp{OS}.
-In \url{https://www.tug.org/texlive/} you find the instructions and the files needed - and also get in touch with minimalism of \TeX users. 
+\section{Stochastic Variance-Reduced Gradient}\label{sec:svrg}
+\vspace{-0.05in}
+Finite-sum optimization is the problem of maximizing an objective function $f(\vtheta)$ which can be decomposed into the sum or average of a finite number of functions $z_i(\cdot|\vtheta)$:
+\begin{align*}
+        \max_{\vtheta} \left\{ f(\vtheta) = \frac{1}{N}\sum_{i=1}^{N}z_i(\vtheta)\right\}.
+\end{align*}
+This kind of optimization is very common in machine learning, where each $z_i$ may correspond to a data sample $x_i$ from a dataset $\mathcal{D}_N$ of size $N$ (\ie $z_i(\vtheta) = z(x_i|\vtheta)$). 
+%% In this case, we adopt the following, more meaningful notation:
+%% \begin{align*}
+%% \max_{\vtheta} f(\vtheta) = \frac{1}{N}\sum_{i=1}^{N}g(x_i \vert \vtheta).
+%% \end{align*}
+A common requirement is that $z$ must be smooth and concave in $\vtheta$.\footnote{Note that we are considering a maximization problem instead of the classical minimization one.} 
+Under this hypothesis, full gradient (FG) ascent~\citep{cauchy1847methode} with a constant step size achieves a linear convergence rate in the number $T$ of iterations (\ie parameter updates)~\citep{nesterov2013introductory}.
+However, each iteration requires $N$ gradient computations, which can be too expensive for large values of $N$. Stochastic Gradient (SG) ascent~\citep[\eg][]{robbins1951stochastic,bottou2004large} overcomes this problem by sampling a single sample $x_i$ per iteration, but a vanishing step size is required to control the variance introduced by sampling. As a consequence, the lower per-iteration cost is paid with a worse, sub-linear convergence rate \cite{nemirovskii1983problem}.
+Starting from SAG, a series of variations to SG have been proposed to achieve a better trade-off between convergence speed and cost per iteration: \eg SAG~\citep{roux2012stochastic}, SVRG~\cite{johnson2013accelerating}, SAGA~\cite{defazio2014saga}, and Finito~\cite{defazio2014finito}. 
+The common idea is to reuse past gradient computations to reduce the variance of the current estimate.
+In particular, Stochastic Variance-Reduced Gradient (SVRG) is often preferred to other similar methods for its limited storage requirements, which is a significant advantage when deep and/or wide neural networks are employed.  
 
-Then you will need an editor: I strongly recommend TeXworks because it's very simple and available on all the platforms.
-Also you don't need to install it, it's already included in TeXLive.
-The official documentation of TeXworks is available \href{https://docs.google.com/file/d/0B5iVT8Q7W44pMk1WSFRKcDRlMU0/preview}{here};\footnote{\url{https://docs.google.com/file/d/0B5iVT8Q7W44pMk1WSFRKcDRlMU0/preview}}
-I strongly recommend the reading of chapter 3.
-Alternatevely you can read an italian manual: \href{http://profs.sci.univr.it/~gregorio/introtexworks.pdf}{profs.sci.univr.it/~gregorio/introtexworks.pdf} (just 13 pages, read it!).\footnote{If you already have a preferred editor, just keep using yours.}
+The idea of SVRG (Algorithm~\ref{alg:svrg}) is to alternate full and stochastic gradient updates. 
+Each $m = \mathcal{O}(N)$ iterations, a snapshot $\widetilde{\vtheta}$ of the current parameter is saved together with its full gradient $\nabla f(\widetilde{\vtheta}) = \frac{1}{N} \sum_i \nabla z(x_i|\widetilde{\vtheta})$.
+Between snapshots, the parameter is updated with $\blacktriangledown f(\vtheta)$, a gradient estimate corrected using stochastic gradient. For any $t \in \{0,\ldots,m-1\}$:
+\begin{equation}\label{E:svrg.gradient.correction}
+        \blacktriangledown f(\vtheta_{t}) := v_t = \nabla f(\wt{\vtheta}) + \nabla z(x | \vtheta_t) - \nabla z(x | \wt{\vtheta}),
+\end{equation} 
+where $x$ is sampled uniformly at random from $\mathcal{D}_N$ (\ie $x \sim \mathcal{U}(\mathcal{D}_N)$).
+Note that $t=0$ corresponds to a FG step (\ie $\blacktriangledown f(\vtheta_0) = \nabla f(\wt{\vtheta})$) since $\vtheta_0 := \wt{\vtheta}$.
+The corrected gradient $\blacktriangledown f(\vtheta)$ is an unbiased estimate of $\nabla f(\vtheta)$, and it is able to control the variance introduced by sampling even with a fixed step size, achieving a linear convergence rate without resorting to a plain full gradient.
 
-After opening TeXworks, I strongly suggest to set these two additional things:
-\begin{itemize}
-	\item open Preferences, then go the Composition tab: in the second box there, the \enquote{Process instruments}, push the plus button.
-	In the window just opened, write \verb!Biber! in the \enquote{Name} field, \verb!biber! in the \enquote{Program} field (lowercase!) and then press the plus button to add the argument \verb!$basename!;
-	\item again in the same window, set \enquote{Hide console output} to \enquote{never}.
-\end{itemize}
+More recently, some extensions of variance reduction algorithms to the non-concave objectives have been proposed~\citep[\eg][]{allen2016variance,reddi2016stochastic,reddi2016fast}. In this scenario, $f$ is typically required to be L-smooth, \ie $\norm[2]{\nabla f(\vtheta') - \nabla f(\vtheta)} \leq L\norm[2]{\vtheta'-\vtheta}$ for each $\vtheta,\vtheta'\in\realspace^n$ and for some Lipschitz constant $L$. Under this hypothesis, the convergence rate of SG is $O(\nicefrac{1}{\sqrt{T}})$ \cite{ghadimi2013stochastic}, \ie $T=O(\nicefrac{1}{\epsilon^2})$ iterations are required to get $\norm[2]{\nabla f(\vtheta)}^2\leq\epsilon$. Again, SVRG achieves the same rate as FG \cite{reddi2016stochastic}, which is $O(\frac{1}{T})$ in this case \cite{nesterov2013introductory}. The only additional requirement is to select $\vtheta^*$ uniformly at random among all the $\vtheta_k$ instead of simply setting it to the final value.
 
-Then just test the installation of the template:
-\begin{aenumerate}
-	\item go into the template home folder;
-	\item open the file \verb!ClassicThesis_DEIB.tex!;
-	\item select \verb!pdfLaTeX! from the dropdown menu in the top right of the TeXworks window;
-	\item press the rounded green button: it compiles the \verb!.tex! file for the first time and open the resulting \verb!.pdf!;
-	\item select \verb!Biber! from the same dropdown menu and press again the green button: this compiles the bibliography, a thing you need to repeat only when you change the file \verb!Bibliography.bib!;
-	\item select \verb!pdfLaTeX! again and recompile: this is needed to build indices and crossreferences;
-\end{aenumerate}
-The above compilation procedure is the standard way to translate the \LaTeX\ code into pdfs.
-
-\subsection{Online editor}
-If the above procedure seems too difficult to you and you have an internet connection always available, you might think to use an online editor.
-The best choice at the time of writing is \url{http:\\\\sharelatex.com} where you can even find this template after registration to the site by looking for \enquote{Classic Thesis At DEIB}.
-Your project will be saved on their server but you can also download them.
-The platform allows up to two authors for free accounts.
-
-There is no need to provide instructions for its use since the website has them.
-They also have an online \LaTeX guide.
+\vspace{-0.05in}
 
 \section{Use \LaTeX\ within this template}
 
