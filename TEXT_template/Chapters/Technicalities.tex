@@ -41,13 +41,13 @@ Although the REINFORCE definition is simpler than the G(PO)MDP one, the latter i
 We refer the reader to Appendix~\ref{A:gradient_estimators} for details and a formal definition of $g$.
 
 The main limitation of plain policy gradient is the high variance of these estimators.
-The na\"ive approach of increasing the batch size is not an option in RL due to the high cost of collecting samples, \ie by interacting with the environment.
+The na\"ive approach of increasing the batch size is not an option in \acs{RL} due to the high cost of collecting samples, \ie by interacting with the environment.
 For this reason, literature has focused on the introduction of baselines (\ie functions $b : \mathcal{S} \times \mathcal{A} \to \realspace$) aiming to reduce the variance~\citep[\eg][]{williams1992simple,Peters2008reinf,Thomas2017actionbaseline,wu2018variance}, see Appendix~\ref{A:gradient_estimators} for a formal definition of $b$.
 These baselines are usually designed to minimize the variance of the gradient estimate, but even them need to be estimated from data, partially reducing their effectiveness.
-On the other hand, there has been a surge of recent interest in variance reduction techniques for gradient optimization in supervised learning (SL).
-Although these techniques have been mainly derived for finite-sum problems, we will show in Section~\ref{sec:alg} how they can be used in RL.
-In particular, we will show that the proposed SVRPG algorithm can take the best of both worlds (\ie SL and RL) since it can be plugged into a policy gradient estimate using baselines.
-The next section has the aim to describe variance reduction techniques for finite-sum problems. In particular, we will present the SVRG algorithm that is at the core of this work.
+On the other hand, there has been a surge of recent interest in variance reduction techniques for gradient optimization in supervised learning (\acs{SL}).
+Although these techniques have been mainly derived for finite-sum problems, we will show in Section~\ref{sec:alg} how they can be used in \acs{RL}.
+In particular, we will show that the proposed \acs{SVRPG} algorithm can take the best of both worlds (\ie \acs{SL} and \acs{RL}) since it can be plugged into a policy gradient estimate using baselines.
+The next section has the aim to describe variance reduction techniques for finite-sum problems. In particular, we will present the \acs{SVRG} algorithm that is at the core of this work.
 
 
 \vspace{-0.05in}
@@ -63,308 +63,22 @@ This kind of optimization is very common in machine learning, where each $z_i$ m
 %% \max_{\vtheta} f(\vtheta) = \frac{1}{N}\sum_{i=1}^{N}g(x_i \vert \vtheta).
 %% \end{align*}
 A common requirement is that $z$ must be smooth and concave in $\vtheta$.\footnote{Note that we are considering a maximization problem instead of the classical minimization one.} 
-Under this hypothesis, full gradient (FG) ascent~\citep{cauchy1847methode} with a constant step size achieves a linear convergence rate in the number $T$ of iterations (\ie parameter updates)~\citep{nesterov2013introductory}.
-However, each iteration requires $N$ gradient computations, which can be too expensive for large values of $N$. Stochastic Gradient (SG) ascent~\citep[\eg][]{robbins1951stochastic,bottou2004large} overcomes this problem by sampling a single sample $x_i$ per iteration, but a vanishing step size is required to control the variance introduced by sampling. As a consequence, the lower per-iteration cost is paid with a worse, sub-linear convergence rate \cite{nemirovskii1983problem}.
-Starting from SAG, a series of variations to SG have been proposed to achieve a better trade-off between convergence speed and cost per iteration: \eg SAG~\citep{roux2012stochastic}, SVRG~\cite{johnson2013accelerating}, SAGA~\cite{defazio2014saga}, and Finito~\cite{defazio2014finito}. 
+Under this hypothesis, \acs{FG} ascent~\citep{cauchy1847methode} with a constant step size achieves a linear convergence rate in the number $T$ of iterations (\ie parameter updates)~\citep{nesterov2013introductory}.
+However, each iteration requires $N$ gradient computations, which can be too expensive for large values of $N$. Stochastic Gradient (\acs{SG}) ascent~\citep[\eg][]{robbins1951stochastic,bottou2004large} overcomes this problem by sampling a single sample $x_i$ per iteration, but a vanishing step size is required to control the variance introduced by sampling. As a consequence, the lower per-iteration cost is paid with a worse, sub-linear convergence rate \cite{nemirovskii1983problem}.
+Starting from SAG, a series of variations to \acs{SG} have been proposed to achieve a better trade-off between convergence speed and cost per iteration: \eg SAG~\citep{roux2012stochastic}, \acs{SVRG}~\cite{johnson2013accelerating}, SAGA~\cite{defazio2014saga}, and Finito~\cite{defazio2014finito}. 
 The common idea is to reuse past gradient computations to reduce the variance of the current estimate.
-In particular, Stochastic Variance-Reduced Gradient (SVRG) is often preferred to other similar methods for its limited storage requirements, which is a significant advantage when deep and/or wide neural networks are employed.  
+In particular, Stochastic Variance-Reduced Gradient (\acs{SVRG}) is often preferred to other similar methods for its limited storage requirements, which is a significant advantage when deep and/or wide neural networks are employed.  
 
-The idea of SVRG (Algorithm~\ref{alg:svrg}) is to alternate full and stochastic gradient updates. 
+The idea of \acs{SVRG} (Algorithm~\ref{alg:svrg}) is to alternate full and stochastic gradient updates. 
 Each $m = \mathcal{O}(N)$ iterations, a snapshot $\widetilde{\vtheta}$ of the current parameter is saved together with its full gradient $\nabla f(\widetilde{\vtheta}) = \frac{1}{N} \sum_i \nabla z(x_i|\widetilde{\vtheta})$.
 Between snapshots, the parameter is updated with $\blacktriangledown f(\vtheta)$, a gradient estimate corrected using stochastic gradient. For any $t \in \{0,\ldots,m-1\}$:
 \begin{equation}\label{E:svrg.gradient.correction}
         \blacktriangledown f(\vtheta_{t}) := v_t = \nabla f(\wt{\vtheta}) + \nabla z(x | \vtheta_t) - \nabla z(x | \wt{\vtheta}),
 \end{equation} 
 where $x$ is sampled uniformly at random from $\mathcal{D}_N$ (\ie $x \sim \mathcal{U}(\mathcal{D}_N)$).
-Note that $t=0$ corresponds to a FG step (\ie $\blacktriangledown f(\vtheta_0) = \nabla f(\wt{\vtheta})$) since $\vtheta_0 := \wt{\vtheta}$.
+Note that $t=0$ corresponds to a \acs{FG} step (\ie $\blacktriangledown f(\vtheta_0) = \nabla f(\wt{\vtheta})$) since $\vtheta_0 := \wt{\vtheta}$.
 The corrected gradient $\blacktriangledown f(\vtheta)$ is an unbiased estimate of $\nabla f(\vtheta)$, and it is able to control the variance introduced by sampling even with a fixed step size, achieving a linear convergence rate without resorting to a plain full gradient.
 
-More recently, some extensions of variance reduction algorithms to the non-concave objectives have been proposed~\citep[\eg][]{allen2016variance,reddi2016stochastic,reddi2016fast}. In this scenario, $f$ is typically required to be L-smooth, \ie $\norm[2]{\nabla f(\vtheta') - \nabla f(\vtheta)} \leq L\norm[2]{\vtheta'-\vtheta}$ for each $\vtheta,\vtheta'\in\realspace^n$ and for some Lipschitz constant $L$. Under this hypothesis, the convergence rate of SG is $O(\nicefrac{1}{\sqrt{T}})$ \cite{ghadimi2013stochastic}, \ie $T=O(\nicefrac{1}{\epsilon^2})$ iterations are required to get $\norm[2]{\nabla f(\vtheta)}^2\leq\epsilon$. Again, SVRG achieves the same rate as FG \cite{reddi2016stochastic}, which is $O(\frac{1}{T})$ in this case \cite{nesterov2013introductory}. The only additional requirement is to select $\vtheta^*$ uniformly at random among all the $\vtheta_k$ instead of simply setting it to the final value.
+More recently, some extensions of variance reduction algorithms to the non-concave objectives have been proposed~\citep[\eg][]{allen2016variance,reddi2016stochastic,reddi2016fast}. In this scenario, $f$ is typically required to be L-smooth, \ie $\norm[2]{\nabla f(\vtheta') - \nabla f(\vtheta)} \leq L\norm[2]{\vtheta'-\vtheta}$ for each $\vtheta,\vtheta'\in\realspace^n$ and for some Lipschitz constant $L$. Under this hypothesis, the convergence rate of \acs{SG} is $O(\nicefrac{1}{\sqrt{T}})$ \cite{ghadimi2013stochastic}, \ie $T=O(\nicefrac{1}{\epsilon^2})$ iterations are required to get $\norm[2]{\nabla f(\vtheta)}^2\leq\epsilon$. Again, \acs{SVRG} achieves the same rate as \acs{FG} \cite{reddi2016stochastic}, which is $O(\frac{1}{T})$ in this case \cite{nesterov2013introductory}. The only additional requirement is to select $\vtheta^*$ uniformly at random among all the $\vtheta_k$ instead of simply setting it to the final value.
 
 \vspace{-0.05in}
-
-\section{Use \LaTeX\ within this template}
-
-\subsection{File structure}
-The template is organized in multiple file and folders:
-\begin{aenumerate}
-
-	\item \verb!ClassicThesis_DEIB.tex! is the main file to be compiled, found in the root folder.
-	You should just add the source filenames you want to include and any hyphenation you need to explictly specify. 
-
-	\item \verb!classicthesis-config.tex! contains options that can be chosen for this template, like the \verb!draft! one that prints date and time at the bottom of every page.
-	It contains also the definition for the title, the author and others stuff displayed in the titlepage.
-	Comments within the file should guide you.\footnote{comments are the rows starting with $\%$.} 
-	Take a look at it!
-
-	\item \verb!Bibliography.bib! is the \emph{Bibtex} database: it is a normal textfile where you should put books and articles read;
-
-	\item \verb!Chapters! contains the files for the main chapters of your thesis; this is where you will add the chapters text, as well these very words in line 41 of the file \verb!Conclusion.tex!;
-
-	\item \verb!CodeFiles! contains any code snippet you want to include in your thesis with the environment \verb!listings!; it might be some relevant Matlab or C code, as well as long bash scripts;
-
-	\item \verb!FrontBackmatter! contains various files that are included in the main one to produce abstract, titlepages, acknowledgements, \ldots. 
-	Follow the instructions below to modify them in order to suits your needs;
-
-	\item \verb!Images! contains the \verb!.pdf! or \verb!.png! versions of the images of the thesis organized in subfolder per chapter.
-
-\end{aenumerate}
-
-To modify abstract, preface, acknowledgements snd acronyms, you need to go into the folder \verb!FrontBackmatter! where you will find the following:
-\begin{description}
-
-	\item[Abstract.tex] contains the text displayed as \enquote{abstract} and \enquote{sommario} just after the list of figures, tables, etc. Modify the text and leave the rest.
-
-	\item[Acknowledgments.tex] contains the text put just before the table of contents. Modify the text to suit your needs.
-
-	\item[Acronyms.tex] contains the environment \verb!acronym! with the definition of all the acronyms that will be used within the text. Add your own to the list and put the longest as parameter of the environment.
- 
-	\item[AutoParts] folder contains things that should work without your intervention. Forget them. 
-
-	\item[Dedication.tex] same usage and structure as \verb!Acknowledgements.tex!.
-
-	\item[Estratto.tex] Politecnico di Milano requires an italian long excerpt of theses written in foreign languages.
-
-	\item[Frontespizio.tex] and \verb!FrontespizioIT.tex! are the cover page in english and italian, respectively. Politecnico di Milano requires the italian version of the english cover, so there it is. Both should work perfectly if you modify section 2 of the file \verb!classicthesis-config.tex!, but you may not like the style so modify them as you prefer.
-	
-	\item[Preface.tex] same usage and structure as \verb!Acknowledgements.tex!.
-
-	\item[Publication.tex] same usage and structure as \verb!Acknowledgements.tex!, but not included by default. Activate it by uncommenting the relevant line in \verb!ClassicThesis_DEIB.tex!.
-
-	\item[RetroFrontespizio.tex] contains the colophon. In most cases is fine as it already is.
-\end{description}
-
-\subsection{Special environments}\label{subsec:special_env}
-In addition to common \LaTeX\ environments, this thesis is set to use:
-\graffito{Use these environments: they make the thesis less bland and readable.}
-\begin{itemize}
-	\item the command \verb!\graffito{}! is used to create margin notes.
-	The limits in number of words or length of word must be seen as a motivation to keep the notes short and simple;
-	\item \verb!\begin{aenumerate}! to produce an \verb!\enumerate! with letters instead of numbers, as in the file list above;
-	\item footnotes are useful to provide extra information. 
-	Usually they are not required to understand a paragraph but provide interesting details. 
-	This keeps the main body of text concise.
-	You can create them with \verb!\footnote{text}!.\footnote{They should be placed after the punctuation mark and preferably at the end of the paragraph. In fact, they should not interrupt the reading flow. If you need to put a footnote in the middle of a paragraph, or of a sentence then the note should be part of the main text.}
-	\item \verb!\ac{}! and its variations, defined by package \verb!acronyms!, provide nice handling for acronyms, like \ac{XML}, produced with the code \verb!\ac{XML}!.
-	List them within the environment \verb!acronym! in the file \verb!FrontBackmatter/Acronyms.tex!.
-\end{itemize}
-
-\subsection{Citing, quoting and referencing}
-References to bibliography are produced in the usual way with \verb!\cite{bib_key}! (\cite{bringhurst:2002}); don't forget the brackets which have to be added by hand.
-There also variations of the command, like \verb!\citeauthor{bib_key}!, \verb!\citetitle{bib_key}! and others that you can find in the \verb!bibtex! manual.
-
-\verb!\blockcquote[][]{}{}! \blockcquote[see][p. 111]{bringhurst:2002}{produce a quotation with reference to author and page}.
-If the quotation is longer than two rows is indented.
-This behavior is provided by the package \verb!csquotes!, which settings are in \verb!classicthesis-config.tex!. 
-The package also provides \verb!\enquote{!the citation\verb!}! that produces \enquote{correct quotation style} according to the language in use.
-
-There is a set of commands to refer to chapters, sections, subsections, appendices, figures, tables and equations, like \verb!\myChap{label_key}! to produce \myChap{chap:aChapter}.
-There are also capital versions of the commands (\verb!\MyChap{}! produces \MyChap{chap:aChapter}).
-They need a \verb!\label{name}! anchor next to the referred thing.
-\begin{itemize}
-	\item\verb!\myChap! for chapters;
-	\item\verb!\mySec! for sections;
-	\item\verb!\mySubsec! for subsections;
-	\item\verb!\myAppendix! for appendices;
-	\item\verb!\myFig! for figures;
-	\item\verb!\myTab! for tables;
-	\item\verb!\myEq! for equations;
-\end{itemize}
-
-\subsection{Figures and tables}
-Figures are handled usually with the code
-\begin{verbatim}
-	\begin{figure}
-	\centering
-	\includegraphics[width=\columnwidth]{Images/your_image_name.pdf} 
-	\caption[Short description]{Long description.}
-	\label{fig:a_name}
-	\end{figure}
-\end{verbatim}
-which produces things like \myFig{fig:massConstraintFeasibility}. 
-Take care of the short description: it appears in the list of figures and should be just a reference, not a exhaustive description.
-Of course, you need to put the image file \verb!your_image_name.pdf! in folder \verb!Images/!.
-We suggest to keep things organized: create a folder for each chapter and keep the original source/working file in the same place.
-	
-\begin{figure}
-\centering
-\includegraphics[width=\columnwidth]{Images/Technicalities/feasibilityNR51.pdf}  
-\caption[Thing taken from our master thesis]{Thing taken from our master thesis whose meaning have been completely forgotten.}
-\label{fig:massConstraintFeasibility}
-\end{figure}
-
-\begin{table}
-\footnotesize
-\centering
-\begin{tabularx}{0.8\textwidth}{llrcl}
-\toprule
-\tableheadline{l}{Algorithm} &
-\tableheadline{l}{Parameter} &
-\tableheadlineMore{3}{c}{Suggested Values} \\
-\midrule
-\tablefirstcol{l}{Any}	& NFE	 		& $10\,000 $ 	& $ \div $ 	& $ 200\,000$ \\
-				& Population Size 	&  $10 $ 		& $ \div $ 	& $ 1000$ \\
-\midrule
-\tablefirstcol{l}{GDE3} & DE step size 		& $0.0 $ 	& $\div $ 	& $ 1.0$ \\
-				& Crossover rate 	& $0.0$ 	& $ \div $ 	& $ 1.0$ \\
-\bottomrule
-\end{tabularx}
-\caption[Parameters needed for things]{Parameters needed for things that are not needed anymore themselves.}
-\label{tab:MOEAandParameters}
-\end{table}
-
-Tables are produced with the code
-\begin{verbatim}
-	\begin{table}[tb]
-	\footnotesize
-	\centering
-	\begin{tabularx}{0.8\textwidth}{llrcl}
-	\toprule
-	\tableheadline{l}{Algorithm} &
-	\tableheadline{l}{Parameter} &
-	\tableheadlineMore{3}{c}{Suggested Values} \\
-	\midrule
-	\tablefirstcol{l}{Any}
-	& \acs{NFE} 		& $10\,000 $ & $ \div $ & $ 200\,000$ \\
-	& Population Size 	&  $10 $ & $ \div 	$ & $ 1000$ \\
-	\midrule
-	\tablefirstcol{l}{\ac{GDE3}}
-	& \ac{DE} step size & $0.0 $ & $\div $ & $ 1.0$ \\
-	& Crossover rate 	& $0.0$ & $ \div $ & $ 1.0$ \\
-	\bottomrule
-	\end{tabularx}
-	\caption[Short description]{Long description.}
-	\label{tab:MOEAandParameters}
-	\end{table}
-\end{verbatim}
-which produces \myTab{tab:MOEAandParameters}.
-\verb!\myfloatalign!, \verb!\tableheadline{}{}! and its variation \verb!\tableheadlineMore{}{}{}! and \verb!\tablefirstcol{}{}! are used to give a common style to all tables in the document.
-Use them!
-They are defined in \verb!classicthesis-config.tex!.
-
-\subsection{Math}
-You can produce an equation like $\lim_{n \to \infty}\sum_{k=1}^n \frac{1}{k^2}= \frac{\pi^2}{6}$ by embedding this code in the line:
-\begin{verbatim}
-	$\lim_{n \to \infty}\sum_{k=1}^n \frac{1}{k^2}= \frac{\pi^2}{6}$.
-\end{verbatim}
-
-Equation that spans the full line like:
-\[
-\lim_{n \to \infty}\sum_{k=1}^n \frac{1}{k^2}= \frac{\pi^2}{6}
-\]
-are produced with something like this:
-\begin{verbatim}
-	\[
-	\lim_{n \to \infty}\sum_{k=1}^n \frac{1}{k^2}= \frac{\pi^2}{6}.
-	\]
-\end{verbatim}
-If you need to refer to the equation later on, you need to number and label it. It is done via
-\begin{verbatim}
-	\begin{equation}
-	\label{eq:euler}
-	e^{i\pi}+1=0.
-	\end{equation}
-\end{verbatim}
-\begin{equation}
-	\label{eq:euler}
-	e^{i\pi}+1=0.
-\end{equation}
-From \myEq{eq:euler} you can see how \verb!\myEq{eq:euler}! should be used.
-
-Numeric sets requires specific font as $\forall x \in \mathbb{R}$ which is produced with \verb!$\forall x \in \mathbb{R}$!. Matrices like
-\[
-A=
-\begin{bmatrix}
-x_{11} & x_{12} & \dots \\
-x_{21} & x_{22} & \dots \\
-\vdots & \vdots & \ddots
-\end{bmatrix}
-\]
-requires
-\begin{verbatim}
-	A=
-	\begin{bmatrix}
-		x_{11} & x_{12} & \dots \\
-		x_{21} & x_{22} & \dots \\
-		\vdots & \vdots & \ddots
-	\end{bmatrix}.
-\end{verbatim}
-Multiline equation can be produced with different environments like \verb!split! and \verb!cases!.
-\[ 
-\begin{split} 
-a &= b+c-d \\ 
-  &= e-f \\ 
-  &= g+h \\ 
-  &= i. 
-\end{split} 
-\]
-comes from
-\begin{verbatim}
-	\begin{split} 
-	a &= b+c-d \\ 
- 	&= e-f \\ 
-	&= g+h \\ 
-	&= i. 
-	\end{split}. 
-\end{verbatim}
-\[
-f(n):=
-\begin{cases} 
-2n+1, & \text{con $n$ dispari,} \\ 
-n/2,  & \text{con $n$ pari.} 
-\end{cases} 
-\]
-comes from
-\begin{verbatim}
-	\begin{split} 
-	a &= b+c-d \\ 
- 	&= e-f \\ 
-	&= g+h \\ 
-	&= i. 
-	\end{split}. 
-\end{verbatim}
-
-Definition like
-\begin{definition}[Gauss] 
-The math guy find obvious that
-$\int_{-\infty}^{+\infty}
-e^{-x^2}\,dx=\sqrt{\pi}$. 
-\end{definition}
-are produced with the code 
-\begin{verbatim}
-\begin{definition}[Gauss] 
-The math guy find obvious that
-$\int_{-\infty}^{+\infty}
-e^{-x^2}\,dx=\sqrt{\pi}$. 
-\end{definition}
-\end{verbatim}
-There also a number of other similar environments, like \verb!observation!, \verb!theorem! with or without name, \verb!corollary! and \verb!lemma!.
-\begin{observation}
-But many people like me don't find it obvious.
-\end{observation}
-\begin{theorem} 
-Mathematicians are very rare, if any.
-\end{theorem} 
-\begin{theorem}[Pythagorean]
-The square of the hypotenuse of a triangle is equal to the sum of the squares of the other two sides.
-\end{theorem}
-Demonstration is left for exercise.
-\begin{corollary}
-A line segment whose length is incommensurable so the ratio of which is not a rational number, can be constructed using a straightedge and compass. 
-\end{corollary}
-\begin{lemma}
-Pythagoras's theorem enables construction of incommensurable lengths because the hypotenuse of a triangle is related to the sides by the square root operation.
-\end{lemma}
-You can also proof your theorem with the environment \verb!proof!.
-\begin{theorem}[Surprise]
-We have $\log(-1)^2=2\log(-1)$.
-\end{theorem} 
-\begin{proof} 
-We have $\log(1)^2 = 2\log(1)$.
-But also we have $\log(-1)^2=\log(1)=0$.
-So $2\log(-1)=0$.
-\end{proof}
-There's also the cute little square at the end.
-
-\section{Contributing to this template}
-Suggestion and improvements are welcome at \url{https://github.com/Lordmzn/ClassicThesis-at-DEIB} or via email at \url{emanuele.mason@polimi.it}, \url{andrea.cominola@polimi.it} or \url{daniela.anghileri@polimi.it}.
