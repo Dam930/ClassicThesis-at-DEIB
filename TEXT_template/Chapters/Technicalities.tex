@@ -23,7 +23,7 @@ Solving an \acs{MDP} $M$ means finding $\pi^* \in \argmax_{\pi} \{J(\pi)\}$.
 Policy gradient methods restrict the search for the best performing policy over a class of parametrized policies $\Pi_{\vtheta}=\{\pol: \vtheta \in \realspace^d\}$, with the only constraint that $\pol$ is differentiable \wrt $\vtheta$. For sake of brevity, we will denote the performance of a parametric policy with $J(\vtheta)$ and the probability of a trajectory $\tau$ with $p(\tau|\vtheta)$ (in some occasions, $p(\tau|\vtheta)$ will be replaced by $p_{\vtheta}(\tau)$ for the sake of readability).
 The search for a locally optimal policy is performed through gradient ascent, where the policy gradient
 %of $J(\vtheta)$ \wrt the policy parameters 
-is \cite{sutton2000policy, Peters2008reinf}:
+is \citep{sutton2000policy, Peters2008reinf}:
 \begin{align} \label{E:policygradient}
 	\gradJ{\vtheta} = \EVV[\tau \sim p(\cdot|\vtheta)]{\score{\vtheta}{\tau}\Reward(\tau)}.
 	%\int_{\Tspace}\pol(\tau)\score{\vtheta}{\tau}\Reward(\tau)\de \tau.
@@ -70,14 +70,14 @@ The common idea is to reuse past gradient computations to reduce the variance of
 In particular, Stochastic Variance-Reduced Gradient (\acs{SVRG}) is often preferred to other similar methods for its limited storage requirements, which is a significant advantage when deep and/or wide neural networks are employed.  
 
 The idea of \acs{SVRG} (Algorithm~\ref{alg:svrg}) is to alternate full and stochastic gradient updates. 
-Each $m = \mathcal{O}(N)$ iterations, a snapshot $\widetilde{\vtheta}$ of the current parameter is saved together with its full gradient $\nabla f(\widetilde{\vtheta}) = \frac{1}{N} \sum_i \nabla z(x_i|\widetilde{\vtheta})$.
+Each $m = \mathcal{O}(N)$ iterations, a snapshot $\widetilde{\vtheta}$ of the current parameter is saved together with its \acs{FG} $\nabla f(\widetilde{\vtheta}) = \frac{1}{N} \sum_i \nabla z(x_i|\widetilde{\vtheta})$.
 Between snapshots, the parameter is updated with $\blacktriangledown f(\vtheta)$, a gradient estimate corrected using stochastic gradient. For any $t \in \{0,\ldots,m-1\}$:
 \begin{equation}\label{E:svrg.gradient.correction}
         \blacktriangledown f(\vtheta_{t}) := v_t = \nabla f(\wt{\vtheta}) + \nabla z(x | \vtheta_t) - \nabla z(x | \wt{\vtheta}),
 \end{equation} 
 where $x$ is sampled uniformly at random from $\mathcal{D}_N$ (\ie $x \sim \mathcal{U}(\mathcal{D}_N)$).
 Note that $t=0$ corresponds to a \acs{FG} step (\ie $\blacktriangledown f(\vtheta_0) = \nabla f(\wt{\vtheta})$) since $\vtheta_0 := \wt{\vtheta}$.
-The corrected gradient $\blacktriangledown f(\vtheta)$ is an unbiased estimate of $\nabla f(\vtheta)$, and it is able to control the variance introduced by sampling even with a fixed step size, achieving a linear convergence rate without resorting to a plain full gradient.
+The corrected gradient $\blacktriangledown f(\vtheta)$ is an unbiased estimate of $\nabla f(\vtheta)$, and it is able to control the variance introduced by sampling even with a fixed step size, achieving a linear convergence rate without resorting to a plain \acs{FG}.
 
 More recently, some extensions of variance reduction algorithms to the non-concave objectives have been proposed~\citep[\eg][]{allen2016variance,reddi2016stochastic,reddi2016fast}. In this scenario, $f$ is typically required to be L-smooth, \ie $\norm[2]{\nabla f(\vtheta') - \nabla f(\vtheta)} \leq L\norm[2]{\vtheta'-\vtheta}$ for each $\vtheta,\vtheta'\in\realspace^n$ and for some Lipschitz constant $L$. Under this hypothesis, the convergence rate of \acs{SG} is $O(\nicefrac{1}{\sqrt{T}})$ \cite{ghadimi2013stochastic}, \ie $T=O(\nicefrac{1}{\epsilon^2})$ iterations are required to get $\norm[2]{\nabla f(\vtheta)}^2\leq\epsilon$. Again, \acs{SVRG} achieves the same rate as \acs{FG} \cite{reddi2016stochastic}, which is $O(\frac{1}{T})$ in this case \cite{nesterov2013introductory}. The only additional requirement is to select $\vtheta^*$ uniformly at random among all the $\vtheta_k$ instead of simply setting it to the final value.
 
