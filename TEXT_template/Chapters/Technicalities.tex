@@ -13,7 +13,13 @@ The agent's behaviour is modelled as a policy $\pi$, where $\pi(\cdot|s)$ is the
 % We consider episodic tasks, \ie tasks composed of episodes of length $H$, also called time horizon.
 % In this setting, a trajectory $\tau$ is the sequence of states and actions $(s_0,a_0,s_1,a_1,\dots,s_{H-1},a_{H-1})$ observed by following some stationary policy in a given episode, where $s_0$ is always sampled from the initial state distribution $\rho$.
 We consider episodic \acs{MDP}s with effective horizon $H$.\footnote{The episode duration is a random variable, but the optimal policy can reach the target state (\ie absorbing state) in at most $H$ steps. This has not to be confused with a finite horizon problem where the optimal policy is non-stationary.} In this setting, we can limit our attention to trajectories of length $H$. A trajectory $\tau$ is a sequence of states and actions $(s_0,a_0,s_1,a_1,\dots,s_{H-1},a_{H-1})$ observed by following a stationary policy, where $s_0 \sim \rho$.
-We denote with $p(\tau|\pi)$ the density distribution induced by policy $\pi$ on the set $\Tspace$ of all possible trajectories (see Appendix~\ref{A:gradient_estimators} for the definition), and with $\Reward(\tau)$ the total discounted reward provided by trajectory $\tau$:
+We denote with $p(\tau|\pi)$ the density distribution induced by policy $\pi$ on the set $\Tspace$ of all possible trajectories defined as:
+
+\[
+p(\tau|\pi,M) = \rho(s_0) \pi(z_0) \prod_{k=1}^{H} \mathcal{P}(s_k|z_{k-1})\pi(z_k).
+\]
+
+$\Reward(\tau)$ is the total discounted reward provided by trajectory $\tau$:
 %
 $\Reward(\tau) = \sum_{t=0}^{H-1}\gamma^t\Reward(s_t,a_t).$
 %
@@ -37,18 +43,47 @@ The policy is then updated as $\vtheta_{k+1}  = \vtheta_k + \alpha\gradApp{\vthe
 	\gradApp{\vtheta}{N} = \frac{1}{N}\sum_{n=1}^{N} g(\tau_i|\vtheta), \quad \tau_i \in \mathcal{D}_N^k,
 \end{align}
 where $g(\tau_i|\vtheta)$ is an estimate of $\score{\vtheta}{\tau_i}\Reward(\tau_i)$.
-Although the REINFORCE definition is simpler than the G(PO)MDP one, the latter is usually preferred due to its lower variance.
-We refer the reader to Appendix~\ref{A:gradient_estimators} for details and a formal definition of $g$.
+Although the REINFORCE definition is simpler than the G(PO)MDP one, the latter is usually preferred due to its lower variance \citep{zhao2011analysis}. More precisely the REINFORCE estimator is defined as follows:
+\begin{align*}
+\gradApp{\vtheta}{N} = \frac{1}{N}\sum_{n=1}^{N}
+\underbracket{
+	\left(\sum_{h=0}^{H}\nabla \log \pol(z_h^n) \right)\left(\sum_{h=0}^{H}\gamma^h 
+	%        \Reward(z_h^n)
+	r_h^n
+	- b(z_h^n)\right)
+}_{g(\tau_n|\vtheta):=\nabla \log p(\tau_n|\vtheta)\Reward(\tau_n)}
+,
+\end{align*}
+Whereas the G(PO)MDP gradient estimator is:
+\begin{align*}
+\gradApp{\vtheta}{N} = \frac{1}{N}\sum_{n=1}^{N}
+\underbracket{
+	\sum_{h=0}^{H}\left(\sum_{k=0}^{h} \nabla \log \pol (z_h^n) \right)\left(\gamma^h 
+	%        \Reward(z_h^n)
+	r_h^n
+	- b(z^n_h)\right)
+}_{g(\tau_n|\vtheta)}.
+\end{align*}
+where subscripts denote the time step, superscripts denote the trajectory, $r_h^n$ is the reward actually collected at time $h$ from trajectory $\tau^n$ and $b : \mathcal{S}\times\mathcal{A} \to \realspace$~\citep[\eg][]{Thomas2017actionbaseline} is the baseline.
+Summarizing, G(PO)MDP can be seen as a more efficient implementation of the REINFORCE algorithm. 
+Ideed, the latter does not perform an optimal credit assignment since it ignores that the reward at time $t$ does not depend on the action performed after time $t$.
+G(PO)MDP overcomes this issue taking into account the causality of rewards in the REINFORCE definition of policy gradient.
+
+
+
 
 The main limitation of plain policy gradient is the high variance of these estimators.
 The na\"ive approach of increasing the batch size is not an option in \acs{RL} due to the high cost of collecting samples, \ie by interacting with the environment.
-For this reason, literature has focused on the introduction of baselines (\ie functions $b : \mathcal{S} \times \mathcal{A} \to \realspace$) aiming to reduce the variance~\citep[\eg][]{williams1992simple,Peters2008reinf,Thomas2017actionbaseline,wu2018variance}, see Appendix~\ref{A:gradient_estimators} for a formal definition of $b$.
+For this reason, literature has focused on the introduction of baselines (\ie functions $b : \mathcal{S} \times \mathcal{A} \to \realspace$) aiming at reducing the variance~\citep[\eg][]{williams1992simple,Peters2008reinf,Thomas2017actionbaseline,wu2018variance}.
 These baselines are usually designed to minimize the variance of the gradient estimate, but even them need to be estimated from data, partially reducing their effectiveness.
 On the other hand, there has been a surge of recent interest in variance reduction techniques for gradient optimization in supervised learning (\acs{SL}).
 Although these techniques have been mainly derived for finite-sum problems, we will show in Section~\ref{sec:alg} how they can be used in \acs{RL}.
-In particular, we will show that the proposed \acs{SVRPG} algorithm can take the best of both worlds (\ie \acs{SL} and \acs{RL}) since it can be plugged into a policy gradient estimate using baselines.
-The next section has the aim to describe variance reduction techniques for finite-sum problems. In particular, we will present the \acs{SVRG} algorithm that is at the core of this work.
+In particular, we will show that the proposed \acs{SVRPG} algorithm can take the best of both worlds (\ie \acs{SL} and \acs{RL}).
+The section \ref{sec:svrg} aims at describing variance reduction techniques for finite-sum problems. In particular, we will present there the \acs{SVRG} algorithm that is at the core of this whole work, but before that, in the next section, we will give an introduction to the Natural Policy Gradient.
 
+
+\vspace{-0.05in}
+\section{Natural Policy Gradient}\label{sec:npg}
 
 \vspace{-0.05in}
 \section{Stochastic Variance-Reduced Gradient}\label{sec:svrg}
@@ -65,7 +100,7 @@ This kind of optimization is very common in machine learning, where each $z_i$ m
 A common requirement is that $z$ must be smooth and concave in $\vtheta$.\footnote{Note that we are considering a maximization problem instead of the classical minimization one.} 
 Under this hypothesis, \acs{FG} ascent~\citep{cauchy1847methode} with a constant step size achieves a linear convergence rate in the number $T$ of iterations (\ie parameter updates)~\citep{nesterov2013introductory}.
 However, each iteration requires $N$ gradient computations, which can be too expensive for large values of $N$. Stochastic Gradient (\acs{SG}) ascent~\citep[\eg][]{robbins1951stochastic,bottou2004large} overcomes this problem by sampling a single sample $x_i$ per iteration, but a vanishing step size is required to control the variance introduced by sampling. As a consequence, the lower per-iteration cost is paid with a worse, sub-linear convergence rate \cite{nemirovskii1983problem}.
-Starting from SAG, a series of variations to \acs{SG} have been proposed to achieve a better trade-off between convergence speed and cost per iteration: \eg SAG~\citep{roux2012stochastic}, \acs{SVRG}~\cite{johnson2013accelerating}, SAGA~\cite{defazio2014saga}, and Finito~\cite{defazio2014finito}. 
+Starting from \acs{SAG}, a series of variations to \acs{SG} have been proposed to achieve a better trade-off between convergence speed and cost per iteration: \eg \acs{SAG}~\citep{roux2012stochastic}, \acs{SVRG}~\cite{johnson2013accelerating}, SAGA~\cite{defazio2014saga}, and Finito~\cite{defazio2014finito}. 
 The common idea is to reuse past gradient computations to reduce the variance of the current estimate.
 In particular, Stochastic Variance-Reduced Gradient (\acs{SVRG}) is often preferred to other similar methods for its limited storage requirements, which is a significant advantage when deep and/or wide neural networks are employed.  
 
