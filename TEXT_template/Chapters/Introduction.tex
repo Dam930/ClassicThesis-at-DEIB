@@ -1,3 +1,5 @@
+% !TEX root = ../ClassicThesis_DEIB.tex
+
 \chapter{INTRODUCTION} \label{chap:aChapter}
 
 \ac{RL} is a field of machine learning that aims at building intelligent machines, called agent, capable of learning complex tasks from experience.
@@ -7,4 +9,4 @@ The idea of stochastic gradient (SG) ascent (Nesterov, 2013) is to iteratively f
 The aim of this thesis is to develop a novel approach for reducing the variance of policy gradient's estimate using the \acs{SVRG}\cite{allen2016variance} technique that has proven to be very successful in \ac{SL}.\newline
 Variance-reduced gradient algorithms already used in \acs{SL} are SAG \citep{roux2012stochastic}, SVRG \citep{allen2016variance} and SAGA \citep{defazio2014saga}.\newline
 In \acs{RL} continuous domains are common in automatic control and robotic applications. Traditional RL algorithms, based on value functions, suffer from many problems when applied to such continuous tasks, the most serious being the lack of strong theoretical guarantees. Policy gradient methods, besides guaranteeing convergence to locally optimal policies \citep{sutton2000policy}, are able to address many of the difficulties that characterize complex control problems, such as high dimensional state that leads to an infinite space of the cases of interest. 
-Among RL approaches, policy gradient is also the one that bears the closest similarity to \acs{SL} solutions. The fundamental principle of these methods is to optimize a parametric policy through stochastic gradient ascent (\acs{SG}).
+Among RL approaches, policy gradient is also the one that bears the closest similarity to \acs{SL} solutions. The fundamental principle of these methods is to optimize a parametric policy through stochastic gradient ascent(\acs{SG}).
