@@ -85,7 +85,7 @@
         <relationship name="items" type="0/0" destination="PROJECTITEM" idrefs="z118 z117 z119 z115 z121 z120 z122 z123 z124 z125 z106 z127 z126 z130 z129 z128 z111 z131 z108 z116 z132 z133 z134 z112 z138 z136 z137 z135 z139 z113 z105 z140 z151 z141 z107 z114 z142 z143 z144 z145 z109 z146 z147 z110 z149 z148 z150"></relationship>
     </object>
     <object type="UISETTINGS" id="z104">
-        <attribute name="pdfviewscrollrect" type="string">{{0, 18991.966486262765}, {370.25424324076999, 589.98456513585916}}</attribute>
+        <attribute name="pdfviewscrollrect" type="string">{{0, 18240.198055205594}, {604, 1341.6539121433198}}</attribute>
         <attribute name="showpdfthumbnails" type="bool">0</attribute>
         <attribute name="selectedcontrolstab" type="int16">0</attribute>
         <attribute name="maxoutlinedepth" type="int16">7</attribute>
@@ -230,12 +230,12 @@
     </object>
     <object type="TEXFILE" id="z113">
         <attribute name="wasopen" type="bool">2</attribute>
-        <attribute name="visiblerect" type="string">{{0, 681}, {625, 424}}</attribute>
-        <attribute name="lasteditdate" type="date">541100235.50237703323364257812</attribute>
+        <attribute name="visiblerect" type="string">{{0, 576}, {625, 424}}</attribute>
+        <attribute name="lasteditdate" type="date">541100438.95319294929504394531</attribute>
         <attribute name="istext" type="bool">1</attribute>
-        <attribute name="fileloaddate" type="date">541100236.32164800167083740234</attribute>
+        <attribute name="fileloaddate" type="date">541100442.69631505012512207031</attribute>
         <attribute name="extension" type="string">tex</attribute>
-        <attribute name="cursor" type="string">{3608, 0}</attribute>
+        <attribute name="cursor" type="string">{3619, 0}</attribute>
         <attribute name="sortindex" type="int32">39</attribute>
         <attribute name="name" type="string">Introduction.tex</attribute>
         <attribute name="isexpanded" type="bool">0</attribute>
