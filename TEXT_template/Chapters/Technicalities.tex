@@ -77,7 +77,7 @@ The na\"ive approach of increasing the batch size is not an option in \acs{RL} d
 For this reason, literature has focused on the introduction of baselines (\ie functions $b : \mathcal{S} \times \mathcal{A} \to \realspace$) aiming at reducing the variance~\citep[\eg][]{williams1992simple,Peters2008reinf,Thomas2017actionbaseline,wu2018variance}.
 These baselines are usually designed to minimize the variance of the gradient estimate, but even them need to be estimated from data, partially reducing their effectiveness.
 On the other hand, there has been a surge of recent interest in variance reduction techniques for gradient optimization in supervised learning (\acs{SL}).
-Although these techniques have been mainly derived for finite-sum problems, we will show in Section~\ref{sec:alg} how they can be used in \acs{RL}.
+Although these techniques have been mainly derived for finite-sum problems, we will show in \hyperref[chap:svrpg]{Chapter 3} how they can be used in \acs{RL}.
 In particular, we will show that the proposed \acs{SVRPG} algorithm can take the best of both worlds (\ie \acs{SL} and \acs{RL}).
 The section \ref{sec:svrg} aims at describing variance reduction techniques for finite-sum problems. In particular, we will present there the \acs{SVRG} algorithm that is at the core of this whole work, but before that, in the next section, we will give an introduction to the Natural Policy Gradient.
 
@@ -106,8 +106,18 @@ The solution for this problem is given by $\delta\vtheta^{NG}\propto F^{-1}_{\vt
 \ \nabla_{\vtheta}^{NG} J_{\vtheta}=F^{-1}_{\vtheta} \nabla_{\vtheta} J_{\vtheta}
 \]
 where $\nabla_{\vtheta} J_{\vtheta}$ can be estimated by any policy gradient method.
-
-
+\\
+A cutting edge algorithm exploiting the above mentioned natural gradient is \ac{TRPO} \citep{schulman2015trust}. This algorithm mainly consist in solving a constrained optimization problem obtained after several approximations:
+\[
+\ \vtheta^{new}=\argmax_{\vtheta}J_{\vtheta_{old}}(\vtheta)
+\ subjetc~to \overline{D}_{KL}^{p\vtheta_{old}}(\vtheta_{old},\vtheta)\le\delta
+\]
+where \[
+\ \overline{D}_{KL}^{p\vtheta_{old}}(\vtheta_{old},\vtheta)=\EVV[s \sim p\vtheta_{old}]{D_{KL}(\pi_{\vtheta_{old}}(\cdot|s),\pi_{\vtheta}(\cdot|s))}
+\]
+and \[
+\ J_{\vtheta_{old}}(\vtheta)= J(\vtheta)+\sum_{s}p_{\pi_{\vtheta_{old}}}(s)\sum_{a}\pi_{\vtheta}(a|s)A_{\pi_{\vtheta_{old}}}(s,a)
+\]
 \vspace{-0.05in}
 \section{Stochastic Variance-Reduced Gradient}\label{sec:svrg}
 \vspace{-0.05in}
