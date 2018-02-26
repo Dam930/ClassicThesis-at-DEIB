@@ -1,7 +1,7 @@
 \chapter{State of the art}\label{chap:art}
 
 \vspace{-0.05in}
-In this section, we provide the essential background on policy gradient methods and stochastic variance-reduced gradient methods for finite-sum optimization.
+In this chapter, we provide the essential background on policy gradient methods and stochastic variance-reduced gradient methods for finite-sum optimization.
 \vspace{-0.05in}
 
 \section{Policy Gradient}\label{sec:PolicyGradient}
@@ -77,14 +77,47 @@ The na\"ive approach of increasing the batch size is not an option in \acs{RL} d
 For this reason, literature has focused on the introduction of baselines (\ie functions $b : \mathcal{S} \times \mathcal{A} \to \realspace$) aiming at reducing the variance~\citep[\eg][]{williams1992simple,Peters2008reinf,Thomas2017actionbaseline,wu2018variance}.
 These baselines are usually designed to minimize the variance of the gradient estimate, but even them need to be estimated from data, partially reducing their effectiveness.
 On the other hand, there has been a surge of recent interest in variance reduction techniques for gradient optimization in supervised learning (\acs{SL}).
-Although these techniques have been mainly derived for finite-sum problems, we will show in Section~\ref{sec:alg} how they can be used in \acs{RL}.
+Although these techniques have been mainly derived for finite-sum problems, we will show in \hyperref[chap:svrpg]{Chapter 3} how they can be used in \acs{RL}.
 In particular, we will show that the proposed \acs{SVRPG} algorithm can take the best of both worlds (\ie \acs{SL} and \acs{RL}).
 The section \ref{sec:svrg} aims at describing variance reduction techniques for finite-sum problems. In particular, we will present there the \acs{SVRG} algorithm that is at the core of this whole work, but before that, in the next section, we will give an introduction to the Natural Policy Gradient.
 
 
 \vspace{-0.05in}
 \section{Natural Policy Gradient}\label{sec:npg}
-
+Traditional gradient methods assume that all parameters dimensions have similarly strong effects on the resulting distribution, \ie they use an euclidean metric $\transpose{\delta\vtheta}\delta\vtheta$ in order to determine the direction of the update $\delta\vtheta$. However, small changes in $\vtheta$ may result in large changes on the policy distribution $p_{\vtheta}(\tau)$. Moreover, as the gradient estimate depends on $p_{\vtheta}(\tau)$ due to the sampling process, the next gradient estimation may also change drastically \citep{deisenroth2013survey}. Therefore, would be a nice property if the next policy distribution did not change much after an update step. This is the key idea behind the natural gradient which limits the distance between $p_{\vtheta}(\tau)$ and $p_{\vtheta+\delta\vtheta}(\tau)$ after the update. An approximation of the \ac{KL} is used to measure the distance between $p_{\vtheta}(\tau)$ and $p_{\vtheta+\delta\vtheta}(\tau)$. The distance between two distribution $P$ and $Q$ through the \acs{KL} is defined as:
+\[
+\	D_{KL}(P||Q)=\int_{+\infty}^{-\infty}p(x)\log(\frac{p(x)}{q(x)})dx
+\]
+where $p(x)$ and $q(x)$ denotes the densities of P and Q. It has been shown that the Fisher information matrix
+\[
+\ F_{\vtheta}=\EVV[\tau \sim p(\cdot|\vtheta)]{\score{\vtheta}{\tau}\transpose{\score{\vtheta}{\tau}}}
+\]
+can be used to approximate the \acs{KL} between $p_{\vtheta+\delta\vtheta}(\tau)$ and $p_{\vtheta}(\tau)$ for sufficiently small $\delta\vtheta$, \ie
+\[
+\ D_{KL}(p_{\vtheta}(\tau)||p_{\vtheta+\delta\vtheta}(\tau))\approx\transpose{\delta\vtheta}F_{\vtheta}\delta\vtheta
+\]
+The natural gardient update $\delta\vtheta^{NG}$ is, therefore, defined as the update $\delta\vtheta$ that is most similar to the "vanilla" gradient update $\delta\vtheta^{VG}$  subject to a constraint  on the distributions space $D_{KL}(p_{\vtheta+\delta\vtheta}(\tau)||p_{\vtheta}(\tau))\le\epsilon$.
+This implies the formulation of the following optimization problem:
+\[
+\ \delta\vtheta^{NG}=\argmax_{\delta\vtheta}\transpose{\delta\vtheta}\delta\vtheta^{VG} ~s.t.  ~\transpose{\delta\vtheta}F_{\vtheta}\delta\vtheta\le\epsilon
+\]
+The solution for this problem is given by $\delta\vtheta^{NG}\propto F^{-1}_{\vtheta}\delta\vtheta^{VG}$ up to a scaling factor which is subsumend into the learning rate \citep{deisenroth2013survey}. We can immediately see that the natural gradient linearly tarnsform the plain gradient by the inverse Fisher matrix, which makes it invariant to linear transformations of the policy parameters, in other words, if two policy parametrizations have the same representative power they will enjoy the same natural gradient update. Since the Fisher information matrix is positive semidefinite the natural gradient corresponds at most to a 90 degrees rotation of the plain gradient, hence all the standard convergence guarantees still hold. The main advantages of the natural gradient are premature convergence avoidance on plateaus and due to its isotropic convergence properties it avoids overaggressive steps on steep ridges \citep{deisenroth2013survey}. Given what we said the natural policy gradient is, of course, given by:
+\[
+\ \nabla_{\vtheta}^{NG} J_{\vtheta}=F^{-1}_{\vtheta} \nabla_{\vtheta} J_{\vtheta}
+\]
+where $\nabla_{\vtheta} J_{\vtheta}$ can be estimated by any policy gradient method.
+\\
+A cutting edge algorithm exploiting the above mentioned natural gradient is \ac{TRPO} \citep{schulman2015trust}. This algorithm mainly consist in solving a constrained optimization problem obtained after several approximations:
+\[
+\ \vtheta^{new}=\argmax_{\vtheta}J_{\vtheta_{old}}(\vtheta)
+\ subjetc~to \overline{D}_{KL}^{p\vtheta_{old}}(\vtheta_{old},\vtheta)\le\delta
+\]
+where \[
+\ \overline{D}_{KL}^{p\vtheta_{old}}(\vtheta_{old},\vtheta)=\EVV[s \sim p\vtheta_{old}]{D_{KL}(\pi_{\vtheta_{old}}(\cdot|s),\pi_{\vtheta}(\cdot|s))}
+\]
+and \[
+\ J_{\vtheta_{old}}(\vtheta)= J(\vtheta)+\sum_{s}p_{\pi_{\vtheta_{old}}}(s)\sum_{a}\pi_{\vtheta}(a|s)A_{\pi_{\vtheta_{old}}}(s,a)
+\]
 \vspace{-0.05in}
 \section{Stochastic Variance-Reduced Gradient}\label{sec:svrg}
 \vspace{-0.05in}
@@ -115,5 +148,28 @@ Note that $t=0$ corresponds to a \acs{FG} step (\ie $\blacktriangledown f(\vthet
 The corrected gradient $\blacktriangledown f(\vtheta)$ is an unbiased estimate of $\nabla f(\vtheta)$, and it is able to control the variance introduced by sampling even with a fixed step size, achieving a linear convergence rate without resorting to a plain \acs{FG}.
 
 More recently, some extensions of variance reduction algorithms to the non-concave objectives have been proposed~\citep[\eg][]{allen2016variance,reddi2016stochastic,reddi2016fast}. In this scenario, $f$ is typically required to be L-smooth, \ie $\norm[2]{\nabla f(\vtheta') - \nabla f(\vtheta)} \leq L\norm[2]{\vtheta'-\vtheta}$ for each $\vtheta,\vtheta'\in\realspace^n$ and for some Lipschitz constant $L$. Under this hypothesis, the convergence rate of \acs{SG} is $O(\nicefrac{1}{\sqrt{T}})$ \cite{ghadimi2013stochastic}, \ie $T=O(\nicefrac{1}{\epsilon^2})$ iterations are required to get $\norm[2]{\nabla f(\vtheta)}^2\leq\epsilon$. Again, \acs{SVRG} achieves the same rate as \acs{FG} \cite{reddi2016stochastic}, which is $O(\frac{1}{T})$ in this case \cite{nesterov2013introductory}. The only additional requirement is to select $\vtheta^*$ uniformly at random among all the $\vtheta_k$ instead of simply setting it to the final value.
-
+\begin{algorithm}[tb]
+	\caption{SVRG}
+	\label{alg:svrg}
+	\begin{algorithmic}
+		\STATE {\bfseries Input:} a dataset $\mathcal{D}_N$, number of epochs $S$, epoch size $m$, step size $\alpha$, initial parameter $\vtheta_{m}^0:=\wt{\vtheta}^0$
+		\FOR{$s=0$ {\bfseries to} $S-1$}
+		\STATE $\vtheta_0^{s+1} := \wt{\vtheta}^{s} = \vtheta_{m}^s$
+		\STATE $\wt{\mu} = \nabla f(\wt{\vtheta}^s)$
+		\FOR{$t=0$ {\bfseries to} $m-1$}
+		%		\STATE Pick $i$ uniformly at random from $[1,N]$
+		\STATE $x \sim \mathcal{U}\left(\mathcal{D}_N\right)$
+		\STATE $v^{s+1}_t = 
+		%			\nabla f(\wt{\vtheta}^s) + 
+		\wt{\mu} + 
+		\nabla z(x|\vtheta_t^{s+1}) -
+		\nabla z(x|\wt{\vtheta}^{s})
+		$
+		\STATE $\vtheta_{t+1}^{s+1} = \vtheta_t^{s+1} + \alpha v^{s+1}_t$
+		\ENDFOR
+		\ENDFOR
+		\STATE \underline{Concave case:} \textbf{return} $\vtheta_{m}^S$
+		\STATE \underline{Non-Concave case:} \textbf{return} $\vtheta_t^{s+1}$ with $(s,t)$ picked uniformly at random from $\{[0,S-1]\times[0,m-1]\}$
+	\end{algorithmic}
+\end{algorithm}
 \vspace{-0.05in}
