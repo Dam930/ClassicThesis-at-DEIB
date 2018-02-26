@@ -190,7 +190,7 @@ The corrected gradient $\blacktriangledown f(\vtheta)$ is an unbiased estimate o
 \begin{equation}\label{E:batch.svrg.gradient.correction}
 \blacktriangledown f(\vtheta_{t}) := v_t = \nabla f(\wt{\vtheta}) + \frac{1}{\left|B\right|}\sum_{x_i\in B} \left(\nabla z(x_i | \vtheta_t) - \nabla z(x_i | \wt{\vtheta})\right)
 \end{equation}
-where $B$ is a random subset of $\mathcal{D}_N)$ giving birth to a Mini-Batch \acs{SVRG} \citep{reddi2016stochastic} (see Algorithm~\ref{alg:batch-svrg}).
+where $B$ is made of $b$ random samples taken from $\mathcal{D}_N$ with replacement. This gives birth to a Mini-Batch \acs{SVRG} \citep{reddi2016stochastic} (see Algorithm~\ref{alg:batch-svrg}).
 
 More recently, some extensions of variance reduction algorithms to the non-concave objectives have been proposed~\citep[\eg][]{allen2016variance,reddi2016stochastic,reddi2016fast}. In this scenario, $f$ is typically required to be L-smooth, \ie $\norm[2]{\nabla f(\vtheta') - \nabla f(\vtheta)} \leq L\norm[2]{\vtheta'-\vtheta}$ for each $\vtheta,\vtheta'\in\realspace^n$ and for some Lipschitz constant $L$. Under this hypothesis, the convergence rate of \acs{SG} is $O(\nicefrac{1}{\sqrt{T}})$ \citep{ghadimi2013stochastic}, \ie $T=O(\nicefrac{1}{\epsilon^2})$ iterations are required to get $\norm[2]{\nabla f(\vtheta)}^2\leq\epsilon$. Again, \acs{SVRG} achieves the same rate as \acs{FG} \citep{reddi2016stochastic}, which is $O(\frac{1}{T})$ in this case \citep{nesterov2013introductory}. The only additional requirement is to select $\vtheta^*$ uniformly at random among all the $\vtheta_k$ instead of simply setting it to the final value.
 \begin{algorithm}[tb]
