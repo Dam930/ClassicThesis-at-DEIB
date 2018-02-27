@@ -18,10 +18,8 @@ We denote with $p(\tau|\pi)$ the density distribution induced by policy $\pi$ on
 \[
 p(\tau|\pi,M) = \rho(s_0) \pi(z_0) \prod_{k=1}^{H} \mathcal{P}(s_k|z_{k-1})\pi(z_k).
 \]
-
-$\Reward(\tau)$ is the total discounted reward provided by trajectory $\tau$:
 %
-$\Reward(\tau) = \sum_{t=0}^{H-1}\gamma^t\Reward(s_t,a_t).$
+$\Reward(\tau) = \sum_{t=0}^{H-1}\gamma^t\Reward(s_t,a_t)$ is the total discounted reward provided by trajectory $\tau = \{\langle s_t,a_t \rangle\}_{t=0}^{H}= \{z_t\}_{t=0}^{H} = z_{0:H}$\newline 
 %
 Policies can be ranked based on their expected total reward: $J(\pi) = \EVV[\tau \sim p(\cdot|\pi)]{\Reward(\tau)|M}$.
 Solving an \acs{MDP} $M$ means finding $\pi^* \in \argmax_{\pi} \{J(\pi)\}$.
@@ -47,10 +45,10 @@ Although the REINFORCE definition is simpler than the G(PO)MDP one, the latter i
 \begin{align*}
 \gradApp{\vtheta}{N} = \frac{1}{N}\sum_{n=1}^{N}
 \underbracket{
-	\left(\sum_{h=0}^{H}\nabla \log \pol(z_h^n) \right)\left(\sum_{h=0}^{H}\gamma^h 
+	\left(\sum_{h=0}^{H}\nabla \log \pol(z_h^n) \right)\left(\sum_{h=0}^{H}\left(\gamma^h 
 	%        \Reward(z_h^n)
 	r_h^n
-	- b(z_h^n)\right)
+	- b(z_h^n)\right)\right)
 }_{g(\tau_n|\vtheta):=\nabla \log p(\tau_n|\vtheta)\Reward(\tau_n)}
 ,
 \end{align*}
@@ -64,7 +62,7 @@ Whereas the G(PO)MDP gradient estimator is:
 	- b(z^n_h)\right)
 }_{g(\tau_n|\vtheta)}.
 \end{align*}
-where subscripts denote the time step, superscripts denote the trajectory, $r_h^n$ is the reward actually collected at time $h$ from trajectory $\tau^n$ and $b : \mathcal{S}\times\mathcal{A} \to \realspace$~\citep[\eg][]{Thomas2017actionbaseline} is the baseline.
+where subscripts denote the time step, superscripts denote the trajectory, $r_h^n$ is the reward actually collected at time $h$ from trajectory $\tau^n$, $z_t^n$ is the tuple $\langle s_t^n,a_t^n\rangle$ of trajectory $\tau^n$ and $b : \mathcal{S}\times\mathcal{A} \to \realspace$~\citep[\eg][]{Thomas2017actionbaseline} is the baseline.\newline
 Summarizing, G(PO)MDP can be seen as a more efficient implementation of the REINFORCE algorithm. 
 Ideed, the latter does not perform an optimal credit assignment since it ignores that the reward at time $t$ does not depend on the action performed after time $t$.
 G(PO)MDP overcomes this issue taking into account the causality of rewards in the REINFORCE definition of policy gradient.
@@ -95,15 +93,15 @@ Finally the off-policy version of REINFORCE is easily obtained by taking the emp
 \[
 \nabla J(\pi^T) = \frac{1}{N} \sum_{n=1}^{N} \omega(\tau^n|\pi^B, \pi^T)
 \underbracket{
-	\left(\sum_{h=0}^{H} \nabla \log \pi^{T}(z_h^n) \right)\left(\sum_{h=0}^{H}\gamma^h \Reward(z_h^n)\right)
+	\left(\sum_{h=0}^{H} \nabla \log \pi^{T}(z_h^n) \right)\left(\sum_{h=0}^{H}\left(\gamma^h r_h^n - b(z_h^n)\right)\right)
 }_{g(\tau_n|\pi^T)}.
 \]
-%
+% \Reward(z_h^n)
 whereas the G(PO)MDP off-policy estimator is defined as follows
 \[
 \nabla J(\pi^T) = \frac{1}{N} \sum_{n=1}^{N}
 \underbracket{
-	\sum_{h=0}^H \left(\sum_{k=0}^h \nabla \log\pi^T(z_k^n)\right) \gamma^h \Reward(z_h^n) \omega(z_{0:h}|\pi^B,\pi^T)
+	\sum_{h=0}^H \left(\sum_{k=0}^h \nabla \log\pi^T(z_k^n)\right) \left(\gamma^h r_h^n - b(z_h^n)\right) \omega(z_{0:h}|\pi^B,\pi^T)
 }_{\omega(\tau_n|\pi^B,\pi^T)g(\tau_n|\pi^T)}.
 \]
 \subsection{Considerations on Policy Gradient}
