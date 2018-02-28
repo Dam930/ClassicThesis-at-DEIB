@@ -2,4 +2,46 @@
 In this chapter, we state the convergence guarantees for \acs{SVRPG}  with REINFORCE or G(PO)MDP gradient estimator.
 We mainly leverage on the recent analysis of non-concave \acs{SVRG} (\cite{reddi2016stochastic,allen2016variance}).
 As reported in Chapter \ref{chap:algorithm} the direct application of \acs{SVRG} to \acs{RL} is not trivial due to the following issues: Non-concavity, Infinite dataset and Non-stationarity.
-Each of the three challenges presented can potentially prevent convergence, so we need additional assumptions that will shortly be presented.
+Each of the three challenges presented can potentially prevent convergence, so we need additional assumptions that we present in Section \ref{sec:assumption}. In Section \ref{sec:gaussianassumption} we show how Gaussian policies satisfy these assumptions. In Section \ref{sec:ancillarylemmas} we provide the ancillary lemmas for convergence proof. Finally in Section \ref{sec:maintheorem} we provide the enunciated, the proof and the consequences of the convergence theorem.
+
+\section{Assumptions}\label{sec:assumption}
+
+As reported before we need additional assumptions for addressing the three issues of \acs{RL}:
+
+\textit{1) Non-concavity.} A common assumption, in this case, is to assume the objective function to be $L$-smooth.
+However, in RL we can consider the following assumption which is sufficient for the $L$-smoothness of the objective (see Lemma~\ref{lemma:lsmooth}).
+
+%assumtion
+\begin{assumption}\label{ass:bounded_score}
+	For each state-action pair $(s,a)$, any value of $\vtheta$, and all parameter components $i,j$ there exist constants $0 \leq G,F<\infty$ such that:
+	\[
+	\left|\nabla_{\theta_i}\log\pi_{\vtheta}(a\vert s)\right| \leq \GRADLOG, \qquad
+	\left|\frac{\partial^2}{\partial\theta_i\partial\theta_j}\log\pi_{\vtheta}(a \vert s)\right| \leq \HESSLOG.
+	\]
+\end{assumption}
+
+\textit{2) FG Approximation.}
+Since we cannot compute an exact full gradient, we require the variance of the estimator to be bounded.
+This assumption is similar in spirit to the one in~\citep{harikandeh2015stopwasting}.
+\begin{assumption}\label{ass:REINFORCE}
+	There is a constant $V<\infty$ such that, for any policy $\pol$:
+	\[
+	\Var\left[g(\cdot\vert\vtheta)\right] \leq \VARRF.
+	\]
+\end{assumption}
+
+\textit{3) Non-stationarity.} 
+Similarly to what done in SL~\citep{cortes2010learning}, we require the variance of the importance weight to be bounded.
+\begin{assumption}\label{ass:M2}
+	There is a constant $W<\infty$ such that, for each pair of policies encountered in Algorithm~\ref{alg:svrpg} and for each trajectory,
+	\[
+	\mathbb{V}ar\left[\omega(\tau| \vtheta_1, \vtheta_2)\right] \leq \VARIS, \quad \forall \vtheta_1,\vtheta_2 \in \realspace^d , \tau \sim p(\cdot|\vtheta_1).
+	\]
+\end{assumption}
+Differently from Assumptions~\ref{ass:bounded_score} and ~\ref{ass:REINFORCE}, Assumption~\ref{ass:M2} must be enforced by a proper handling of the epoch size $m$.
+
+\section{Assumptions in gaussian policies}\label{sec:gaussianassumption}
+
+\section{Ancillary Lemmas}\label{sec:ancillarylemmas}
+
+\section{Main theorem}\label{sec:maintheorem}
