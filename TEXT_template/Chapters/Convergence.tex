@@ -1,0 +1,5 @@
+\chapter{Convergence Guarantees of SVRPG} \label{chap:convergence}
+In this chapter, we state the convergence guarantees for \acs{SVRPG}  with REINFORCE or G(PO)MDP gradient estimator.
+We mainly leverage on the recent analysis of non-concave \acs{SVRG} (\cite{reddi2016stochastic,allen2016variance}).
+As reported in Chapter \ref{chap:algorithm} the direct application of \acs{SVRG} to \acs{RL} is not trivial due to the following issues: Non-concavity, Infinite dataset and Non-stationarity.
+Each of the three challenges presented can potentially prevent convergence, so we need additional assumptions that will shortly be presented.
