@@ -2,7 +2,7 @@
 In this chapter, we state the convergence guarantees for \acs{SVRPG}  with REINFORCE or G(PO)MDP gradient estimator.
 We mainly leverage on the recent analysis of non-concave \acs{SVRG} (\cite{reddi2016stochastic,allen2016variance}).
 As reported in Chapter \ref{chap:algorithm} the direct application of \acs{SVRG} to \acs{RL} is not trivial due to the following issues: Non-concavity, Infinite dataset and Non-stationarity.
-Each of the three challenges presented can potentially prevent convergence, so we need additional assumptions that we present in Section \ref{sec:assumption}. In Section \ref{sec:gaussianassumption} we show how Gaussian policies satisfy these assumptions. In Section \ref{sec:definition} we give some additional definitions which will be useful in the proofs. In Section \ref{sec:ancillarylemmas} we provide the ancillary lemmas for convergence proof. Finally in Section \ref{sec:maintheorem} we provide the enunciated, the proof and the consequences of the convergence theorem.
+Each of the three challenges presented can potentially prevent convergence, so we need additional assumptions that we present in Section \ref{sec:assumption}. In Section \ref{sec:gaussianassumption} we show how Gaussian policies satisfy these assumptions. In Section \ref{sec:definition} we give some additional definitions which will be useful in the proofs. In Section \ref{sec:ancillarylemmas} we provide the ancillary lemmas for convergence proof. In Section \ref{sec:maintheorem} we provide the enunciated and the proof of the convergence theorem. Finally in Section \ref{sec:consequence} we provide the consequences of the convergence theorem.
 
 \section{Assumptions}\label{sec:assumption}
 
@@ -109,7 +109,7 @@ We introduce the notation $\tau_{i,h}$ to denote the $h$-th trajectory collected
 		\vert\wt{\vtheta}^s}\\
 	&= \EVV[t-1|s]{\EVV[\tau_{t,h}\sim \pi(\cdot|\vtheta^{s+1}_t)]{X|\vtheta^{s+1}_t}}
 	\end{align*}
-	where the sequence $\wt{\vtheta}^s,\vtheta_0^{s+1},\dots,\vtheta_t^{s+1}$ is defined in Algorithm \ref{alg:svrpg}, $N = [0,\dots,N)$, and $B = [0,\dots,B)$. To avoid inconsistencies, we also define $\Ets[(-1)]{X} \coloneqq \Es{X}$.
+	where the sequence $\wt{\vtheta}^s,\vtheta_0^{s+1},\dots,\vtheta_t^{s+1}$ is defined in Algorithm \ref{alg:svrpg}, $\mathbf{N} = [0,\dots,N)$, and $\mathbf{B} = [0,\dots,B)$. To avoid inconsistencies, we also define $\Ets[(-1)]{X} \coloneqq \Es{X}$.
 	
 \end{definition}
 
@@ -133,10 +133,11 @@ Intuitively, the $\Ets{\cdot}$ operator computes the expected value with respect
 	\[
 	e_s \coloneqq \gradApp{\wt{\vtheta}^s}{N} - \gradJ{\wt{\vtheta}^s} 
 	\]
+	and represent the difference between our estimate of gradient (\eg full gradient) and the real gradient.
 \end{definition}
 
 \begin{definition}\label{def:ideal}
-	The ideal SVRPG gradient estimate is:
+	The ideal \acs{SVRPG} gradient estimate is:
 	\begin{align*}
 	\gradIdeal{\vtheta_t^{s+1}} &\coloneqq 
 	\gradJ{\wt{\vtheta}^s}
@@ -170,7 +171,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	&\leq \sup_{\tau \in \mathcal{T}} \left\{\left|\Reward(\tau)\right|\right\} \left(H^2\GRADLOG^2+H\HESSLOG\right) \label{eq:0}\\
 	&= \frac{1-\gamma^H}{1-\gamma}RH\left(H\GRADLOG^2+\HESSLOG\right),\nonumber
 	\end{align}
-	where \ref{eq:0} is from Assumption \ref{ass:bounded_score}.
+	where Equation \ref{eq:0} is from Assumption \ref{ass:bounded_score} ($H$ represent the trajectories length: $\log p(\tau|\vtheta) = \sum_{t=0}^{M-1}\log\pi_{\vtheta}(a_t\vert s_t)$).
 	Since the Hessian is bounded, $J(\vtheta)$ is Lipschitz-smooth.
 \end{proof}
 
@@ -199,7 +200,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	&=\norm[2]{\left(\sum_{t=0}^{H-1}\score{\vtheta}{a_t\vert s_t}\right)\left(\sum_{t=0}^{H-1}\gamma^t r_t\right)}^2 \\
 	&\leq H^2G^2\frac{(1-\gamma^H)^2}{(1-\gamma)^2}R^2\dim(\vTheta) \coloneqq \Gamma
 	\end{align*}
-	For G(PO)MDP, we do not have a compact expression for $g$, but since it is derived from REINFORCE by neglecting some terms of the kind $\nabla \log \pi_{\vtheta}(a_t | s_t)\gamma^t r_t$ \cite{baxter2001infinite,peters2008reinforcement}, the above bound still holds.
+	For G(PO)MDP, we do not have a compact expression for $g$, but since it is derived from REINFORCE by neglecting some terms of the kind $\nabla \log \pi_{\vtheta}(a_t | s_t)\gamma^t r_t$ \citep{baxter2001infinite,peters2008reinforcement}, the above bound still holds.
 	If a baseline is used in REINFORCE or G(PO)MDP, we only need the additional assumption that said baseline is bounded.
 \end{proof}
 
@@ -455,7 +456,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	&\qquad-
 	\frac{\alpha_t}{2N}\Vars{g(\cdot\vert\wt{\vtheta}^s)} -\frac{\alpha_t}{2}\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2}, \label{eq:13}
 	\end{align}
-	where~\eqref{eq:11} is from the L-smoothness of $J(\vtheta)$ \cite{nesterov2013introductory} and \eqref{eq:12} is from the \acs{SVRPG} update.
+	where~\eqref{eq:11} is from the L-smoothness of $J(\vtheta)$ \citep{nesterov2013introductory} and \eqref{eq:12} is from the \acs{SVRPG} update.
 	Inequality~\ref{eq:13} follows from Lemma~\ref{lemma:aux0} by noticing that $\nabla J(\vtheta^{s+1}_t)$ is a deterministic function given $\vtheta^{s+1}_t$. As a consequence, we can directly apply Lemma~\ref{lemma:aux0} with $\vphi(\vtheta_t^{s+1})\coloneqq\gradJ{\vtheta_t^{s+1}}$.
 	
 	Next, we have:
@@ -550,3 +551,85 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 
 
 \section{Main theorem}\label{sec:maintheorem}
+
+We finally provide the proof of the convergence theorem:
+
+\begin{theorem}\label{theo:convergence}
+	Assume the REINFORCE or the G(PO)MDP gradient estimator is used in SVRPG:
+	\begin{align}
+	\blacktriangledown J(\vtheta_{t}) &:= v_t= \wh{\nabla}_N J(\wt{\vtheta})\\ \notag
+	& \quad{} + 
+		\frac{1}{B} \sum_{i=0}^{B-1} \left[
+		g(\tau_i|\vtheta_t) - \omega(\tau_i|\vtheta_t, \wt{\vtheta}) g(\tau_i|\wt{\vtheta})
+		\right].
+	\end{align}.
+	Under Assumptions~\ref{ass:bounded_score}, \ref{ass:REINFORCE} and \ref{ass:M2}, the parameter vector $\vtheta_A$ returned by Algorithm~\ref{alg:svrpg} after $T=m\times S$ iterations has, for some positive constants $\psi,\zeta, \xi$ and for proper choice of the step size $\alpha$ and the epoch size $m$, the following property:
+	\begin{align*}
+	&\EVV[]
+	{\norm[2]{\nabla J(\vtheta_A)}^2} 
+	\leq
+	\frac{J(\vtheta^*)-J(\vtheta_0)}{\psi T} +
+	\frac{\zeta}{N}
+	+\frac{\xi}{B},
+	\end{align*}
+	where $\psi,\zeta,\xi$ depend only on $\GRADLOG,\HESSLOG,\VARRF,\VARIS,\alpha$ and $m$.
+\end{theorem}
+\begin{proof}
+	We prove the theorem for the following values of the constants:
+	\begin{align*}
+	& \psi \coloneqq \min_t\{\Psi_t\}, 
+	& \zeta \coloneqq \frac{\max_t\{d_t\}V}{\psi}, 
+	&& \xi \coloneqq \frac{\max_t\{f_t\}W}{\psi},
+	\end{align*}
+	where $\Psi$, $d_t$ and $f_t$ are defined in Lemma~\ref{lemma:aux1}.
+	% The values of all other constants and the constraints on the step size are provided in Lemma \ref{lemma:aux1}.
+	Starting from Lemma \ref{lemma:aux1}, summing over iterations of an epoch $s$ and using telescopic sum we obtain
+	\begin{align*}
+	\sum_{t=0}^{m-1}\Ets{\norm[]{\gradJ{(\vtheta_t^{s+1})}^2}}&\leq
+	\frac{\sum_{t=0}^{m-1}\left(R_{t+1}^{s+1} - R_t^{s+1}\right)}{\psi} + \frac{m\zeta}{N} + \frac{m\xi}{B} \nonumber\\
+	& = \frac{R^{s+1}_m - R^{s+1}_0}{\psi}  + \frac{m\zeta}{N} + \frac{m\xi}{B}
+	\end{align*}
+	By using the definition of $R^s_t$ in~\eqref{E:lyapunov.function}, the fact that $c_m = 0$ and $\vtheta^{s+1}_0 = \wt{\vtheta}^s = \vtheta^s_m$, we can state that:
+	\begin{align*}
+	R^{s+1}_m - R^{s+1}_0 
+	&= \EVV[m|s]{J(\vtheta^{s+1}_{m})- c_m \norm[]{\vtheta^{s+1}_{m} - \wt{\vtheta}^s}^2 } - \EVV[0|s]{J(\vtheta^{s+1}_{0}) - c_0 \norm[]{\vtheta^{s+1}_0 - \wt{\vtheta}^s}^2}\\
+	&= \EVV[m|s]{J(\vtheta^{s+1}_{m})} - \EVV[0|s]{J(\wt{\vtheta}^s)}
+	= \EVV[m|s]{J(\wt{\vtheta}^{s+1}) - J(\wt{\vtheta}^s)}
+	\end{align*}
+	Next, summing over epochs:
+	\begin{align}
+	\sum_{s=0}^{S-1}\sum_{t=0}^{m-1}\Ets{\norm[]{\gradJ{(\vtheta_t^{s+1})}^2}}&\leq
+	\frac{\sum_{s=0}^{S-1}\Ets[m]{J(\tilde{\vtheta}^{s+1}) - J(\tilde{\vtheta}^{s})}}{\psi} + \frac{T\zeta}{N} + \frac{T\xi}{B} \nonumber\\
+	%
+	&\leq
+	\frac{\EVV[]{J(\tilde{\vtheta}^{S}) - J(\tilde{\vtheta}^{0})}}{\psi} + \frac{T\zeta}{N} + \frac{T\xi}{B}
+	\label{eq:23}\\
+	%
+	&\leq
+	\frac{J(\vtheta^*) - J(\vtheta^0)}{\psi} + \frac{T\zeta}{N} + \frac{T\xi}{B}, \label{eq:24}
+	\end{align}
+	where the expectation in~\eqref{eq:23} is \wrt all the trajectories sampled in a run of Algorithm~\ref{alg:svrpg} and~\eqref{eq:24} is from the definition of $\vtheta^*$ (\ie the policy performance maximizer).
+	Finally, we consider the expectation \wrt all sources of randomness, including the uniform sampling of the output parameter:
+	\begin{align*}
+	\EVV[]{\norm[]{\gradJ{(\vtheta_t^{s+1})}}^2} 
+	&=\frac{1}{T}\sum_{s=0}^{S-1}\sum_{t=0}^{m-1}\Ets{\norm[]{\gradJ{(\vtheta_t^{s+1})}}^2} 
+	\leq
+	\frac{J(\vtheta^*) - J(\vtheta^0)}{\psi T} + \frac{\zeta}{N} + \frac{\xi}{B}.
+	\end{align*}
+ \end{proof}
+
+\section{Consequence}\label{sec:consequence}
+
+By analysing the upper-bound in Theorem~\ref{theo:convergence}:
+	\begin{align*}
+&\EVV[]
+{\norm[2]{\nabla J(\vtheta_A)}^2} 
+\leq
+\frac{J(\vtheta^*)-J(\vtheta_0)}{\psi T} +
+\frac{\zeta}{N}
++\frac{\xi}{B},
+\end{align*}
+ we observe that: I) the $\mathcal{O}(\nicefrac{1}{T})$ term is coherent with results on non-concave SVRG~\citep[\eg][]{reddi2016stochastic}; II) the $\mathcal{O}(\nicefrac{1}{N})$ term is due to the FG approximation and is analogous to the one in~\citep{harikandeh2015stopwasting}; III) the $\mathcal{O}(\nicefrac{1}{B})$ term is due to importance weighting.
+To achieve asymptotic convergence, the batch size $N$ and the mini-batch size $B$ should increase over time. 
+In practice, it is enough to choose $N$ and $B$ large enough to make the second and the third term negligible, \ie to mitigate the variance introduced by FG approximation and importance sampling, respectively.
+Once the last two terms can be neglected, the number of trajectories needed to achieve $\norm[2]{\gradJ{\vtheta}}^2\leq\epsilon$ is $O(\frac{B+\nicefrac{N}{m}}{\epsilon})$. In this sense, an advantage over batch gradient ascent can be achieved with properly selected meta-parameters. 
