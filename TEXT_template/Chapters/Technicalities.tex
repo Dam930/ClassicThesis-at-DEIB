@@ -1,7 +1,7 @@
 \chapter{State of the art}\label{chap:art}
 
 \vspace{-0.05in}
-In this chapter, we provide all the essentials needed to thoroughly tackle our contribution, starting from policy gradient techniques up to \acs{SVRG} optimization techniques.
+In this chapter, we provide all the essentials needed to thoroughly tackle our contribution, starting from policy gradient techniques, continuing with natural policy gradient and ending with \acs{SVRG} optimization techniques.
 \vspace{-0.05in}
 
 \section{Policy Gradient}\label{sec:PolicyGradient}
@@ -9,7 +9,20 @@ In this chapter, we provide all the essentials needed to thoroughly tackle our c
 A Reinforcement Learning task~\citep{sutton1998reinforcement} can be modelled with a discrete-time continuous \acs{MDP} $M = \{\Sspace,\Aspace,\Transition,\Reward,\gamma,\rho\}$, where $\Sspace$ is a continuous state space; $\Aspace$ is a continuous action space; $\Transition$ is a Markovian transition model, where $\Transition(s'|s,a)$ defines the transition density from state $s$ to $s'$ under action $a$; $\Reward$ is the reward function, where $\Reward(s,a) \in [-R,R]$ is the expected reward for state-action pair $(s,a)$;
 % and $R$ is the maximum absolute-value reward;
 $\gamma\in[0,1)$ is the discount factor; and $\rho$ is the initial state distribution.
-The agent's behaviour is modelled as a policy $\pi$, where $\pi(\cdot|s)$ is the density distribution over $\Aspace$ in state $s$.
+The agent's behaviour is modelled as a policy $\pi$, where $\pi(\cdot|s)$ is the probability density function over $\Aspace$ in state $s$. Moreover, just for completeness, the value function, $V^{\pi}:S\rightarrow \mathbb{R}$, underlying policy $\pi$ is:
+\[
+\ V^{\pi}(s)=\mathbb{E}\left[\sum_{t=0}^{\infty}\gamma^tR_{t+1}\bigg|s_0=s\right], s\in S
+\]
+where $R_t$ is the reward at step $t$.\newline
+The action-value function, $Q^{\pi}:S\times\mathcal{A}\rightarrow\mathbb{R}$, underlying policy $\pi$ assumes that the first action $A_0$ is selected randomly while the subsequent actions comes from policy $\pi$. Then we have:
+\[
+\ Q^{\pi}(s,a)=\mathbb{E}\left[\sum_{t=0}^{\infty}\gamma^tR_{t+1}\bigg| s_0=s,A_0=a\right], s\in S ~ and ~ a \in \mathcal{A}.
+\]
+Whereas the advantage function underlying policy $\pi$ is:
+\[
+\ \mathcal{A}^{\pi}(s,a)=Q^{\pi}(s,a)-V^{\pi}(s)
+\]
+which highlights the advantage we have in taking action $a$ instead of following policy $\pi$ when we are in state $s$.\newline
 % We consider episodic tasks, \ie tasks composed of episodes of length $H$, also called time horizon.
 % In this setting, a trajectory $\tau$ is the sequence of states and actions $(s_0,a_0,s_1,a_1,\dots,s_{H-1},a_{H-1})$ observed by following some stationary policy in a given episode, where $s_0$ is always sampled from the initial state distribution $\rho$.
 We consider episodic \acs{MDP}s with effective horizon $H$.\footnote{The episode duration is a random variable, but the optimal policy can reach the target state (\ie absorbing state) in at most $H$ steps. This has not to be confused with a finite horizon problem where the optimal policy is non-stationary.} In this setting, we can limit our attention to trajectories of length $H$. A trajectory $\tau$ is a sequence of states and actions $(s_0,a_0,s_1,a_1,\dots,s_{H-1},a_{H-1})$ observed by following a stationary policy, where $s_0 \sim \rho$.
@@ -19,7 +32,7 @@ We denote with $p(\tau|\pi)$ the density distribution induced by policy $\pi$ on
 p(\tau|\pi,M) = \rho(s_0) \pi(z_0) \prod_{k=1}^{H} \mathcal{P}(s_k|z_{k-1})\pi(z_k).
 \]
 %
-$\Reward(\tau) = \sum_{t=0}^{H-1}\gamma^t\Reward(s_t,a_t)$ is the total discounted reward provided by trajectory $\tau = \{\langle s_t,a_t \rangle\}_{t=0}^{H}= \{z_t\}_{t=0}^{H} = z_{0:H}$\newline 
+$\Reward(\tau) = \sum_{t=0}^{H-1}\gamma^t\Reward(s_t,a_t)$ is the total discounted reward provided by trajectory $\tau = \{\langle s_t,a_t \rangle\}_{t=0}^{H}= \{z_t\}_{t=0}^{H} = z_{0:H}$ and $z_t=\langle s_t,a_t \rangle.$\newline 
 %
 Policies can be ranked based on their expected total reward: $J(\pi) = \EVV[\tau \sim p(\cdot|\pi)]{\Reward(\tau)|M}$.
 Solving an \acs{MDP} $M$ means finding $\pi^* \in \argmax_{\pi} \{J(\pi)\}$.
@@ -32,11 +45,11 @@ is \citep{sutton2000policy, Peters2008reinf}:
 	\gradJ{\vtheta} = \EVV[\tau \sim p(\cdot|\vtheta)]{\score{\vtheta}{\tau}\Reward(\tau)}.
 	%\int_{\Tspace}\pol(\tau)\score{\vtheta}{\tau}\Reward(\tau)\de \tau.
 \end{align}
-Notice that the distribution defining the gradient is induced by the current policy. This aspect introduces a nonstationarity in the sampling process. Since the underlying distribution changes over time, it is necessary to resample at each update or use weighting techniques such as importance sampling.
+Notice that the distribution defining the gradient is induced by the current policy. This aspect introduces a nonstationarity in the sampling process.
 Here, we consider the \emph{online learning scenario}, where trajectories are sampled by interacting with the environment at each policy change. 
 In this setting, stochastic gradient ascent is typically employed.
 At each iteration $k >0$, a batch $\mathcal{D}_N^k = \{\tau_i\}_{i=0}^N$ of $N>0$ trajectories is collected using policy $\pi_{\vtheta_k}$.
-The policy is then updated as $\vtheta_{k+1}  = \vtheta_k + \alpha\gradApp{\vtheta_k}{N}$, where $\alpha$ is a step size and $\gradApp{\vtheta}{N}$ is an estimate of Eq.~\eqref{E:policygradient} using $\mathcal{D}_N^k$. The most common policy gradient estimators (\eg REINFORCE~\citep{williams1992simple} and G(PO)MDP~\citep{baxter2001infinite}) can be expressed as follows
+The policy is then updated as $\vtheta_{k+1}  = \vtheta_k + \alpha\gradApp{\vtheta_k}{N}$, where $\alpha$ is a step size and $\gradApp{\vtheta}{N}$ is an estimate of Eq.~\eqref{E:policygradient} using $\mathcal{D}_N^k$. The most common policy gradient estimators (\eg REINFORCE~\citep{williams1992simple} and G(PO)MDP~\citep{baxter2001infinite}), which can be expressed with common notation as follows
 \begin{align} \label{E:policygradient.estimate}
 	\gradApp{\vtheta}{N} = \frac{1}{N}\sum_{n=1}^{N} g(\tau_i|\vtheta), \quad \tau_i \in \mathcal{D}_N^k,
 \end{align}
@@ -62,21 +75,21 @@ Whereas the G(PO)MDP gradient estimator is:
 	- b(z^n_h)\right)
 }_{g(\tau_n|\vtheta)}.
 \end{align*}
-where subscripts denote the time step, superscripts denote the trajectory, $r_h^n$ is the reward actually collected at time $h$ from trajectory $\tau^n$, $z_t^n$ is the tuple $\langle s_t^n,a_t^n\rangle$ of trajectory $\tau^n$ and $b : \mathcal{S}\times\mathcal{A} \to \realspace$~\citep[\eg][]{Thomas2017actionbaseline} is the baseline.\newline
+where subscripts denote the time step, superscripts denote the trajectory, $r_h^n$ is the reward actually collected at time $h$ from trajectory $\tau^n$, $z_t^n$ is the tuple $\langle s_t^n,a_t^n\rangle$ of trajectory $\tau^n$ and $b : \mathcal{S}\times\mathcal{A} \to \realspace$~\citep[\eg][]{Thomas2017actionbaseline} is the baseline which is a function representing what reward we expect to get in a given state. Usually we have two kind of baselines those ones statically minimizing the variance of the gradient estimator and those ones approximating the value function of the current policy through more or less complex models.\newline
 Summarizing, G(PO)MDP can be seen as a more efficient implementation of the REINFORCE algorithm. 
 Ideed, the latter does not perform an optimal credit assignment since it ignores that the reward at time $t$ does not depend on the action performed after time $t$.
 G(PO)MDP overcomes this issue taking into account the causality of rewards in the REINFORCE definition of policy gradient.
 
 \subsection{Importance Sampling}\label{subsec:is}
-We have already talked about importance sampling in previous sections, so let us give the proper, but brief, introduction to this topic.\newline
-This technique comes from statistic which, assuming we want to find $\mu=\EVV[]{f(X)}=\int_{\mathcal{D}}f(x)p(x)dx$ where $p$ is a probability density function on $\mathcal{D}\subseteq \mathbb{R}^d$ with $p(x)=0 ~\forall x \notin \mathcal{D}$, tells us the following:
+We have already talked about importance sampling in previous sections, so let us give the proper, although brief, introduction to this topic.\newline
+This technique comes from statistic. Assume we want to find $\mu=\EVV[]{f(X)}=\int_{\mathcal{D}}f(x)p(x)dx$ where $p$ is a probability density function on $\mathcal{D}\subseteq \mathbb{R}^d$ with $p(x)=0 ~\forall x \notin \mathcal{D}$ then:
 \[
 \ \mu=\int_{\mathcal{D}}f(x)p(x)dx=\int_{\mathcal{D}}\frac{f(x)p(x)}{q(x)}q(x)dx=\mathbb{E}_q\left[\frac{f(X)p(X)}{q(X)}\right]
 \]
-where $q$ is a positive probability density function on $\mathbb{R}^d$ and $\EVV[q]{\cdot}$ denotes expectation for $X \sim q$. This techniques introduce a multiplicative correction coefficient which compensate sampling from $q$ as it would have been directly from $p$. The first thing which comes to mind after what we have just said about importance sampling is off-policy \acs{RL}. In off-policy settings two policies, called behavioural $\pi^B$ and target $\pi^T$, are involved.
-The first is used to select actions for the interaction with the system, while the second is used to evaluate the agent performance and it is improved in each update.
+where $q$ is a positive probability density function on $\mathbb{R}^d$ and $\EVV[q]{\cdot}$ denotes expectation for $X \sim q$. This techniques introduce a multiplicative correction coefficient which compensates for sampling from $q$ as $x$ would have been sampled directly from $p$. Importance sampling allows off-policy \acs{RL}. In off-policy settings two policies, called behavioural $\pi^B$ and target $\pi^T$, are involved.
+The first is used to select actions for the interaction with the system, while the second is used to evaluate the agent\textquotesingle s performance and it is improved at each update.
 Suppose now that we aim to estimate the performance of the target policy $\pi^T$ but we have samples collected using policy $\pi^B$.
-We can use importance weight correction to correct the shift in the distribution and obtain an unbiased estimate of $J(\pi^T)$:
+We can use importance weighting correction to correct the shift in the distribution and obtain an unbiased estimate of $J(\pi^T)$:
 \[
 J(\pi^T) = \EVV[\tau \sim p(\cdot|\pi^T)]{\mathcal{R}(\tau)} = \EVV[\tau \sim p(\cdot|\pi^B)]{\omega(\tau) \mathcal{R}(\tau)}
 \]
@@ -89,7 +102,7 @@ The definition of the off-policy version of~\eqref{E:policygradient} is~\citep[\
 For $\omega(\tau|\pi^B,\pi^T)$ being well defined the behavioural policy should have non-zero probability of selecting any action in every state \ie $\pi^B(a|s) > 0$ for any $(s,a)\in \mathcal{S} \times \mathcal{A}$.
 Equation~\ref{E:offpolicygradient} is important for proving Theorem~\ref{theo:convergence} since it provides a common representation of REINFORCE and G(PO)MDP.
 
-Finally the off-policy version of REINFORCE is easily obtained by taking the empirical average of~\eqref{E:offpolicygradient}:
+Finally the off-policy version of REINFORCE is easily obtained by taking the empirical average of~\eqref{E:offpolicygradient} \citep{mastrangelo2015study}:
 \[
 \nabla J(\pi^T) = \frac{1}{N} \sum_{n=1}^{N} \omega(\tau^n|\pi^B, \pi^T)
 \underbracket{
@@ -97,7 +110,7 @@ Finally the off-policy version of REINFORCE is easily obtained by taking the emp
 }_{g(\tau_n|\pi^T)}.
 \]
 % \Reward(z_h^n)
-whereas the G(PO)MDP off-policy estimator is defined as follows
+whereas the G(PO)MDP off-policy estimator is defined as follows \citep{mastrangelo2015study}
 \[
 \nabla J(\pi^T) = \frac{1}{N} \sum_{n=1}^{N}
 \underbracket{
@@ -112,20 +125,20 @@ These baselines are usually designed to minimize the variance of the gradient es
 On the other hand, there has been a surge of recent interest in variance reduction techniques for gradient optimization in supervised learning (\acs{SL}).
 Although these techniques have been mainly derived for finite-sum problems, we will show in \hyperref[chap:svrpg]{Chapter 3} how they can be used in \acs{RL}.
 In particular, we will show that the proposed \acs{SVRPG} algorithm can take the best of both worlds (\ie \acs{SL} and \acs{RL}).
-The section \ref{sec:svrg} aims at describing variance reduction techniques for finite-sum problems. In particular, we will present there the \acs{SVRG} algorithm that is at the core of this whole work, but before that, in the next section, we will give an introduction to the Natural Policy Gradient.
+The section \ref{sec:svrg} aims at describing variance reduction techniques for finite-sum problems. In particular, we will present there the \acs{SVRG} algorithm that is at the core of this whole work, but before that, in the next section, we will give an introduction to the Natural Policy Gradient which will be used to shed more light on the future developments of our technique in \ref{chap:conclusion}.
 
 
 \vspace{-0.05in}
 \section{Natural Policy Gradient}\label{sec:npg}
-Traditional gradient methods assume that all parameters dimensions have similarly strong effects on the resulting policy distribution, \ie they use an euclidean metric $\transpose{\delta\vtheta}\delta\vtheta$ in order to determine the direction of the update $\delta\vtheta$. However, small changes in $\vtheta$ may result in large changes on the policy distribution $p_{\vtheta}(\tau)$. Moreover, as the gradient estimate depends on $p_{\vtheta}(\tau)$ due to the sampling process, the next gradient estimation may also change drastically \citep{deisenroth2013survey}. Therefore, would be a nice property if the next policy distribution did not change much after an update step. This is the key idea behind the natural gradient which limits the distance between $p_{\vtheta}(\tau)$ and $p_{\vtheta+\delta\vtheta}(\tau)$ after the update. An approximation of the \ac{KL} is used to measure the distance between $p_{\vtheta}(\tau)$ and $p_{\vtheta+\delta\vtheta}(\tau)$. The distance between two distribution $P$ and $Q$ through the \acs{KL} is defined as:
+Traditional gradient methods assume that all parameters dimensions have similarly strong effects on the resulting policy distribution, \ie they use an euclidean metric $\transpose{\delta\vtheta}\delta\vtheta$ in order to determine the direction of the update $\delta\vtheta$. However, small changes in $\vtheta$ may result in large changes on the policy distribution $p_{\vtheta}(\tau)$. Moreover, as the gradient estimate depends on $p_{\vtheta}(\tau)$ due to the sampling process, the next gradient estimation may also change drastically \citep{deisenroth2013survey}. Therefore, it would be a nice property if the next policy distribution did not change much after an update step. This is the key idea behind the natural gradient which limits the distance between $p_{\vtheta}(\tau)$ and $p_{\vtheta+\delta\vtheta}(\tau)$ after the update. An approximation of the \ac{KL} is used to measure the distance between $p_{\vtheta}(\tau)$ and $p_{\vtheta+\delta\vtheta}(\tau)$. The distance between two distributions $P$ and $Q$ through the \acs{KL} is defined as:
 \[
-\	D_{KL}(P||Q)=\int_{+\infty}^{-\infty}p(x)\log(\frac{p(x)}{q(x)})dx
+\	D_{KL}(P||Q)=\int_{+\infty}^{-\infty}p(x)\log\left(\frac{p(x)}{q(x)}\right)dx
 \]
 where $p(x)$ and $q(x)$ denotes the densities of P and Q. It has been shown that the Fisher information matrix
 \[
 \ F_{\vtheta}=\EVV[\tau \sim p(\cdot|\vtheta)]{\score{\vtheta}{\tau}\transpose{\score{\vtheta}{\tau}}}
 \]
-can be used to approximate the \acs{KL} between $p_{\vtheta+\delta\vtheta}(\tau)$ and $p_{\vtheta}(\tau)$ for sufficiently small $\delta\vtheta$, \ie
+can be used to approximate to the second order the \acs{KL} between $p_{\vtheta+\delta\vtheta}(\tau)$ and $p_{\vtheta}(\tau)$ for sufficiently small $\delta\vtheta$ \citep{jeffreys1998theory}, \ie
 \[
 \ D_{KL}(p_{\vtheta}(\tau)||p_{\vtheta+\delta\vtheta}(\tau))\approx\transpose{\delta\vtheta}F_{\vtheta}\delta\vtheta
 \]
@@ -137,13 +150,13 @@ This implies the formulation of the following optimization problem:
 \[
 \ subject~to  ~~\transpose{\delta\vtheta}F_{\vtheta}\delta\vtheta\le\epsilon
 \]
-The solution for this problem is given by $\delta\vtheta^{NG}\propto F^{-1}_{\vtheta}\delta\vtheta^{VG}$ up to a scaling factor which is subsumend into the learning rate \citep{deisenroth2013survey}. We can immediately see that the natural gradient linearly tarnsform the plain gradient by the inverse Fisher matrix, which makes it invariant to linear transformations of the policy parameters, in other words, if two policy parametrizations have the same representative power they will enjoy the same natural gradient update. Since the Fisher information matrix is positive semidefinite the natural gradient corresponds at most to a 90 degrees rotation of the plain gradient, hence all the standard convergence guarantees still hold. The main advantages of the natural gradient are premature convergence avoidance on plateaus and due to its isotropic convergence properties it avoids overaggressive steps on steep ridges \citep{deisenroth2013survey}. Given what we said the natural policy gradient is, of course, given by:
+The solution for this problem is given by $\delta\vtheta^{NG}\propto F^{-1}_{\vtheta}\delta\vtheta^{VG}$ up to a scaling factor which is subsumend into the learning rate \citep{deisenroth2013survey}. We can immediately see that the natural gradient linearly tarnsform the plain gradient by the inverse Fisher matrix, which makes it invariant to linear transformations of the policy parameters; in other words, if two policy parametrizations have the same representative power they will enjoy the same natural gradient update. The main advantages of the natural gradient are premature convergence avoidance on plateaus and due to its isotropic convergence properties it avoids overaggressive steps on steep ridges \citep{deisenroth2013survey}. Given what we said the natural policy gradient is, of course, given by:
 \[
 \ \nabla_{\vtheta}^{NG} J_{\vtheta}=F^{-1}_{\vtheta} \nabla_{\vtheta} J_{\vtheta}
 \]
 where $\nabla_{\vtheta} J_{\vtheta}$ can be estimated by any policy gradient method.
 \\
-A cutting edge algorithm exploiting the above mentioned natural gradient is \ac{TRPO} \citep{schulman2015trust}. This algorithm mainly consist in solving a constrained optimization problem obtained after several approximations:
+A cutting edge algorithm exploiting the above mentioned natural gradient is \ac{TRPO} \citep{schulman2015trust}. This algorithm mainly consists in solving a constrained optimization problem obtained after several approximations:
 \[
 \ \vtheta^{new}=\argmax_{\vtheta}J_{\vtheta_{old}}(\vtheta)
 \]
@@ -160,38 +173,27 @@ with $A$ representing the advantage function.
 \vspace{-0.05in}
 \section{Stochastic Variance-Reduced Gradient}\label{sec:svrg}
 \vspace{-0.05in}
-Finite-sum optimization is the problem of maximizing an objective function $f(\vtheta)$ which can be decomposed into the sum or average of a finite number of functions $z_i(\cdot|\vtheta)$:
+Finite-sum optimization is the problem of maximizing an objective function $f(\vtheta)$ which can be decomposed into the sum or average of a finite number of functions $h_i(\cdot|\vtheta)$:
 \begin{align*}
-        \max_{\vtheta} \left\{ f(\vtheta) = \frac{1}{N}\sum_{i=1}^{N}z_i(\vtheta)\right\}.
+        \max_{\vtheta} \left\{ f(\vtheta) = \frac{1}{N}\sum_{i=1}^{N}h_i(\vtheta)\right\}.
 \end{align*}
-This kind of optimization is very common in machine learning, where each $z_i$ may correspond to a data sample $x_i$ from a dataset $\mathcal{D}_N$ of size $N$ (\ie $z_i(\vtheta) = z(x_i|\vtheta)$). 
+This kind of optimization is very common in machine learning, where each $z_i$ may correspond to a data sample $x_i$ from a dataset $\mathcal{D}_N$ of size $N$ (\ie $h_i(\vtheta) = z(x_i|\vtheta)$). 
 %% In this case, we adopt the following, more meaningful notation:
 %% \begin{align*}
 %% \max_{\vtheta} f(\vtheta) = \frac{1}{N}\sum_{i=1}^{N}g(x_i \vert \vtheta).
 %% \end{align*}
-A common requirement is that $z$ must be smooth and concave in $\vtheta$.\footnote{Note that we are considering a maximization problem instead of the classical minimization one.} 
-Under this hypothesis, \acs{FG} ascent~\citep{cauchy1847methode} with a constant step size achieves a linear convergence rate in the number $T$ of iterations (\ie parameter updates)~\citep{nesterov2013introductory}.
-However, each iteration requires $N$ gradient computations, which can be too expensive for large values of $N$. Stochastic Gradient (\acs{SG}) ascent~\citep[\eg][]{robbins1951stochastic,bottou2004large} overcomes this problem by sampling a single sample $x_i$ per iteration, but a vanishing step size is required to control the variance introduced by sampling. As a consequence, the lower per-iteration cost is paid with a worse, sub-linear convergence rate \citep{nemirovskii1983problem}.
+A common requirement is that $h$ must be smooth and concave in $\vtheta$.\footnote{Note that we are considering a maximization problem instead of the classical minimization one.} 
+Under this hypothesis, \acs{FG} ascent~\citep{cauchy1847methode} with a constant step size achieves a linear convergence rate in the number $T$ of iterations (\ie parameter updates)~\citep{nesterov2013introductory}, which means, called $a_t$ the solution returned by this method after $T$ iterations, that:
+\[
+\ \lim_{t\rightarrow \infty}\frac{|a_{t+1}-a^*|}{|a_t-a^*|}=k
+\]
+where $a^*$ is teh seeked optimal solution.\newline
+However, each iteration requires $N$ gradient computations, which can be too expensive for large values of $N$. Stochastic Gradient (\acs{SG}) ascent~\citep[\eg][]{robbins1951stochastic,bottou2004large} overcomes this problem by sampling a single sample $x_i$ per iteration, but a vanishing step size is required to control the variance introduced by sampling. As a consequence, the lower per-iteration cost is paid with a worse, sub-linear convergence rate \citep{nemirovskii1983problem}, which, in turn, means that $k_t$ changes from step to step and $k_t\rightarrow 1$ for $t \rightarrow \infty$.\newline
 Starting from \acs{SAG}, a series of variations to \acs{SG} have been proposed to achieve a better trade-off between convergence speed and cost per iteration: \eg \acs{SAG}~\citep{roux2012stochastic}, \acs{SVRG}~\citep{johnson2013accelerating}, \acs{SAGA}~\citep{defazio2014saga}, and Finito~\citep{defazio2014finito}. 
 The common idea is to reuse past gradient computations to reduce the variance of the current estimate.
-In particular, Stochastic Variance-Reduced Gradient (\acs{SVRG}) is often preferred to other similar methods for its limited storage requirements, which is a significant advantage when deep and/or wide neural networks are employed.  
+In particular, Stochastic Variance-Reduced Gradient (\acs{SVRG}) is often preferred to other similar methods for its limited storage requirements, which is a significant advantage when deep and/or wide neural networks are employed.
 
-The idea of \acs{SVRG} (Algorithm~\ref{alg:svrg}) is to alternate full and stochastic gradient updates. 
-Each $m = \mathcal{O}(N)$ iterations, a snapshot $\widetilde{\vtheta}$ of the current parameter is saved together with its \acs{FG} $\nabla f(\widetilde{\vtheta}) = \frac{1}{N} \sum_i \nabla z(x_i|\widetilde{\vtheta})$.
-Between snapshots, the parameter is updated with $\blacktriangledown f(\vtheta)$, a gradient estimate corrected using stochastic gradient. For any $t \in \{0,\ldots,m-1\}$:
-\begin{equation}\label{E:svrg.gradient.correction}
-        \blacktriangledown f(\vtheta_{t}) := v_t = \nabla f(\wt{\vtheta}) + \nabla z(x | \vtheta_t) - \nabla z(x | \wt{\vtheta}),
-\end{equation} 
-where $x$ is sampled uniformly at random from $\mathcal{D}_N$ (\ie $x \sim \mathcal{U}(\mathcal{D}_N)$).
-Note that $t=0$ corresponds to a \acs{FG} step (\ie $\blacktriangledown f(\vtheta_0) = \nabla f(\wt{\vtheta})$) since $\vtheta_0 := \wt{\vtheta}$.
-The corrected gradient $\blacktriangledown f(\vtheta)$ is an unbiased estimate of $\nabla f(\vtheta)$, and it is able to control the variance introduced by sampling even with a fixed step size, achieving a linear convergence rate without resorting to a plain \acs{FG}. Furthermore it is also possible to change euqation \ref{E:svrg.gradient.correction} in:
-\begin{equation}\label{E:batch.svrg.gradient.correction}
-\blacktriangledown f(\vtheta_{t}) := v_t = \nabla f(\wt{\vtheta}) + \frac{1}{\left|B\right|}\sum_{x_i\in B} \left(\nabla z(x_i | \vtheta_t) - \nabla z(x_i | \wt{\vtheta})\right)
-\end{equation}
-where $B$ is made of $b$ random samples taken from $\mathcal{D}_N$ with replacement. This gives birth to a Mini-Batch \acs{SVRG} \citep{reddi2016stochastic} (see Algorithm~\ref{alg:batch-svrg}).
-
-More recently, some extensions of variance reduction algorithms to the non-concave objectives have been proposed~\citep[\eg][]{allen2016variance,reddi2016stochastic,reddi2016fast}. In this scenario, $f$ is typically required to be L-smooth, \ie $\norm[2]{\nabla f(\vtheta') - \nabla f(\vtheta)} \leq L\norm[2]{\vtheta'-\vtheta}$ for each $\vtheta,\vtheta'\in\realspace^n$ and for some Lipschitz constant $L$. Under this hypothesis, the convergence rate of \acs{SG} is $O(\nicefrac{1}{\sqrt{T}})$ \citep{ghadimi2013stochastic}, \ie $T=O(\nicefrac{1}{\epsilon^2})$ iterations are required to get $\norm[2]{\nabla f(\vtheta)}^2\leq\epsilon$. Again, \acs{SVRG} achieves the same rate as \acs{FG} \citep{reddi2016stochastic}, which is $O(\frac{1}{T})$ in this case \citep{nesterov2013introductory}. The only additional requirement is to select $\vtheta^*$ uniformly at random among all the $\vtheta_k$ instead of simply setting it to the final value.
-\begin{algorithm}[tb]
+\begin{algorithm}[h]
 	\caption{SVRG}
 	\label{alg:svrg}
 	\begin{algorithmic}
@@ -205,8 +207,8 @@ More recently, some extensions of variance reduction algorithms to the non-conca
 		\STATE $v^{s+1}_t = 
 		%			\nabla f(\wt{\vtheta}^s) + 
 		\wt{\mu} + 
-		\nabla z(x|\vtheta_t^{s+1}) -
-		\nabla z(x|\wt{\vtheta}^{s})
+		\nabla h(x|\vtheta_t^{s+1}) -
+		\nabla h(x|\wt{\vtheta}^{s})
 		$
 		\STATE $\vtheta_{t+1}^{s+1} = \vtheta_t^{s+1} + \alpha v^{s+1}_t$
 		\ENDFOR
@@ -214,8 +216,19 @@ More recently, some extensions of variance reduction algorithms to the non-conca
 		\STATE \underline{Concave case:} \textbf{return} $\vtheta_{m}^S$
 		\STATE \underline{Non-Concave case:} \textbf{return} $\vtheta_t^{s+1}$ with $(s,t)$ picked uniformly at random from $\{[0,S-1]\times[0,m-1]\}$
 	\end{algorithmic}
-\end{algorithm}
-\begin{algorithm}[tb]
+\end{algorithm} 
+
+The idea of \acs{SVRG} (Algorithm~\ref{alg:svrg}) is to alternate full and stochastic gradient updates. 
+Each $m = \mathcal{O}(N)$ iterations, a snapshot $\widetilde{\vtheta}$ of the current parameter is saved together with its \acs{FG} $\nabla f(\widetilde{\vtheta}) = \frac{1}{N} \sum_i \nabla h(x_i|\widetilde{\vtheta})$.
+Between snapshots, the parameter is updated with $\blacktriangledown f(\vtheta)$, a gradient estimate corrected using stochastic gradient. For any $t \in \{0,\ldots,m-1\}$:
+\begin{equation}\label{E:svrg.gradient.correction}
+        \blacktriangledown f(\vtheta_{t}) := v_t = \nabla f(\wt{\vtheta}) + \nabla h(x | \vtheta_t) - \nabla h(x | \wt{\vtheta}),
+\end{equation} 
+where $x$ is sampled uniformly at random from $\mathcal{D}_N$ (\ie $x \sim \mathcal{U}(\mathcal{D}_N)$).
+Note that $t=0$ corresponds to a \acs{FG} step (\ie $\blacktriangledown f(\vtheta_0) = \nabla f(\wt{\vtheta})$) since $\vtheta_0 := \wt{\vtheta}$.
+The corrected gradient $\blacktriangledown f(\vtheta)$ is an unbiased estimate of $\nabla f(\vtheta)$, and it is able to control the variance introduced by sampling even with a fixed step size, achieving a linear convergence rate without resorting to a plain \acs{FG}. Indeed, let $T$ be the number of iterations a \acs{FG} approach would require to converge to a local optimum, \acs{SVRG} is able to obtain an equally good solution computing a lot less gradients, precisely $m+N$ for each outer iteration of Algorithm \ref{alg:svrg} where we set $s\cdot m=T$ \citep{johnson2013accelerating}.
+
+\begin{algorithm}[h]
 	\caption{Mini-Batch-SVRG}
 	\label{alg:batch-svrg}
 	\begin{algorithmic}
@@ -233,7 +246,7 @@ More recently, some extensions of variance reduction algorithms to the non-conca
 		\STATE $v^{s+1}_t = 
 		%			\nabla f(\wt{\vtheta}^s) + 
 		\wt{\mu} + 
-		\frac{1}{\left|B\right|}\sum_{x_i\in B} \left(\nabla z(x_i | \vtheta_t) - \nabla z(x_i | \wt{\vtheta})\right)
+		\frac{1}{\left|B\right|}\sum_{x_i\in B} \left(\nabla h(x_i | \vtheta_t) - \nabla h(x_i | \wt{\vtheta})\right)
 		$
 		\STATE $\vtheta_{t+1}^{s+1} = \vtheta_t^{s+1} + \alpha v^{s+1}_t$
 		\ENDFOR
@@ -242,4 +255,12 @@ More recently, some extensions of variance reduction algorithms to the non-conca
 		\STATE \underline{Non-Concave case:} \textbf{return} $\vtheta_t^{s+1}$ with $(s,t)$ picked uniformly at random from $\{[0,S-1]\times[0,m-1]\}$
 	\end{algorithmic}
 \end{algorithm}
+
+Furthermore it is also possible to change euqation \ref{E:svrg.gradient.correction} in:
+\begin{equation}\label{E:batch.svrg.gradient.correction}
+\blacktriangledown f(\vtheta_{t}) := v_t = \nabla f(\wt{\vtheta}) + \frac{1}{\left|B\right|}\sum_{x_i\in B} \left(\nabla h(x_i | \vtheta_t) - \nabla h(x_i | \wt{\vtheta})\right)
+\end{equation}
+where $B$ is made of $b$ random samples taken from $\mathcal{D}_N$ with replacement. This gives birth to a Mini-Batch \acs{SVRG} \citep{reddi2016stochastic} (see Algorithm~\ref{alg:batch-svrg}), which further reduce the variance of the estimator. Notice that for both Algorithm \ref{alg:svrg} and Algorithm \ref{alg:batch-svrg} the parameters $S$ and $m$ are fundamental and should be properly set in order to get a good enough solution for the optimization problem the user wants to tackle.\newline
+
+More recently, some extensions of variance reduction algorithms to the non-concave objectives have been proposed~\citep[\eg][]{allen2016variance,reddi2016stochastic,reddi2016fast}. In this scenario, $f$ is typically required to be L-smooth, \ie $\norm[2]{\nabla f(\vtheta') - \nabla f(\vtheta)} \leq L\norm[2]{\vtheta'-\vtheta}$ for each $\vtheta,\vtheta'\in\realspace^n$ and for some Lipschitz constant $L$. Under this hypothesis, the convergence rate of \acs{SG} is $O(\nicefrac{1}{\sqrt{T}})$ \citep{ghadimi2013stochastic}, \ie $T=O(\nicefrac{1}{\epsilon^2})$ iterations are required to get $\norm[2]{\nabla f(\vtheta)}^2\leq\epsilon$. Again, \acs{SVRG} achieves the same rate as \acs{FG} \citep{reddi2016stochastic}, which is $O(\frac{1}{T})$ in this case \citep{nesterov2013introductory}. The only additional requirement is to select $\vtheta^*$ uniformly at random among all the $\vtheta_k$ instead of simply setting it to the final value.
 \vspace{-0.05in}
