@@ -2,14 +2,14 @@
 In this chapter, we state the convergence guarantees for \acs{SVRPG}  with REINFORCE or G(PO)MDP gradient estimator.
 We mainly leverage on the recent analysis of non-concave \acs{SVRG} (\cite{reddi2016stochastic,allen2016variance}).
 As reported in Chapter \ref{chap:algorithm} the direct application of \acs{SVRG} to \acs{RL} is not trivial due to the following issues: Non-concavity, Infinite dataset and Non-stationarity.
-Each of the three challenges presented can potentially prevent convergence, so we need additional assumptions that we present in Section \ref{sec:assumption}. In Section \ref{sec:gaussianassumption} we show how Gaussian policies satisfy these assumptions. In Section \ref{sec:ancillarylemmas} we provide the ancillary lemmas for convergence proof. Finally in Section \ref{sec:maintheorem} we provide the enunciated, the proof and the consequences of the convergence theorem.
+Each of the three challenges presented can potentially prevent convergence, so we need additional assumptions that we present in Section \ref{sec:assumption}. In Section \ref{sec:gaussianassumption} we show how Gaussian policies satisfy these assumptions. In Section \ref{sec:definition} we give some additional definitions which will be useful in the proofs. In Section \ref{sec:ancillarylemmas} we provide the ancillary lemmas for convergence proof. Finally in Section \ref{sec:maintheorem} we provide the enunciated, the proof and the consequences of the convergence theorem.
 
 \section{Assumptions}\label{sec:assumption}
 
 As reported before we need additional assumptions for addressing the three issues of \acs{RL}:
 
-\textit{1) Non-concavity.} A common assumption, in this case, is to assume the objective function to be $L$-smooth.
-However, in RL we can consider the following assumption which is sufficient for the $L$-smoothness of the objective (see Lemma~\ref{lemma:lsmooth}).
+\textit{1) Non-concavity.} A common assumption, in this case, is to assume the objective function to be $L$-smooth (\cite{reddi2016stochastic,allen2016variance}).
+However, in \acs{RL} we can consider the following assumption which is sufficient for the $L$-smoothness of the objective (see Lemma~\ref{lemma:lsmooth}).
 
 %assumtion
 \begin{assumption}\label{ass:bounded_score}
@@ -21,8 +21,8 @@ However, in RL we can consider the following assumption which is sufficient for 
 \end{assumption}
 
 \textit{2) FG Approximation.}
-Since we cannot compute an exact full gradient, we require the variance of the estimator to be bounded.
-This assumption is similar in spirit to the one in~\citep{harikandeh2015stopwasting}.
+Since we cannot compute an exact full gradient due to the infinity of dataset, we require the variance of the estimator of gradient to be bounded.
+This assumption is similar in spirit to the one in ~\cite{harikandeh2015stopwasting}.
 \begin{assumption}\label{ass:REINFORCE}
 	There is a constant $V<\infty$ such that, for any policy $\pol$:
 	\[
@@ -38,10 +38,515 @@ Similarly to what done in SL~\citep{cortes2010learning}, we require the variance
 	\mathbb{V}ar\left[\omega(\tau| \vtheta_1, \vtheta_2)\right] \leq \VARIS, \quad \forall \vtheta_1,\vtheta_2 \in \realspace^d , \tau \sim p(\cdot|\vtheta_1).
 	\]
 \end{assumption}
-Differently from Assumptions~\ref{ass:bounded_score} and ~\ref{ass:REINFORCE}, Assumption~\ref{ass:M2} must be enforced by a proper handling of the epoch size $m$.
+Differently from Assumptions~\ref{ass:bounded_score} and ~\ref{ass:REINFORCE}, Assumption~\ref{ass:M2} must be enforced by a proper handling of the epoch size $m$.\newline
+Given this assumptions we can prove convergence guaranties of \acs{SVRPG}.
 
 \section{Assumptions in gaussian policies}\label{sec:gaussianassumption}
+We can now provide more details on the applicability of convergence guaranties on the case of Gaussian policies. Gaussian policies are the most used policies in practice. In our experiment we use Gaussian policies too. We start to analyze the case of one-dimensional bounded action space $\mathcal{A}\subset\mathbb{R}$, linear mean $\mu(s) = \vtheta^T\vphi(s)$ and fixed standard deviation $\sigma$:
+\[
+\pi_{\vtheta}(a\vert s) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left\{
+-\frac{(\vtheta^T\vphi(s) - a)^2}{2\sigma^2}\right\},
+\]
+where $\vphi(s)\leq M_{\phi}$ is a bounded feature vector, and we see under which conditions the three assumptions of Section \ref{sec:assumption} hold.
+
+For the Gaussian policy defined above, it's easy to show that:
+\begin{align*}
+&\nabla_{\theta_i}\log\pi_{\vtheta}(\tau) =  \phi_i(s)\frac{a-\vtheta^T\phi(s)}{\sigma^2},\\
+&\frac{\partial^2}{\partial\theta_i\partial\theta_j}\log\pi_{\vtheta}(\tau) = \frac{\phi_i(s)\phi_j(s)}{\sigma^2}.
+\end{align*}
+Hence, Assumption \ref{ass:bounded_score} is automatically satisfied \footnote{This relies on the fact that $\vtheta^T\phi(s)$ lies in bounded $\Aspace$. In practice, this is usually enforced by clipping the action selected by $\pi_{\vtheta}$. A more rigorous way would be to employ the truncated Gaussian distribution.} by taking $\GRADLOG = \frac{M_{\phi}|\Aspace|}{\sigma^2}$ and $\HESSLOG = \frac{M_{\phi}^2}{\sigma^2}$.
+\par
+
+As mentioned, \citep{pirotta2013adaptive} provides a bound on the variance of the REINFORCE estimator, adapted from \cite{zhao2011analysis}, which does not depend on $\vtheta$:
+\begin{align*}
+\Var\left[\gradApp{\theta_i}{N}\right] \leq \frac{R^2M_{\phi}^2H(1-\gamma^H)^2}{N\sigma^2(1-\gamma)^2}.
+\end{align*}
+The same authors provide a similar bound for G(PO)MDP. So we can considered Assumption \ref{ass:REINFORCE} satisfied.
+
+
+It is noted in \cite{cortes2010learning} that, for any two Gaussian distributions $\mathcal{N}(\mu_1,\sigma_1)$ and $\mathcal{N}(\mu_2,\sigma_2)$, the variance of the importance weights from the latter to the former is bounded whenever $\sigma_2 > \frac{\sqrt{2}}{2}\sigma_1$. This is automatically satisfied by our fixed-variance Gaussian policies, since $\sigma_2=\sigma_1=\sigma$.
+So, also Assumption \ref{ass:M2} has been satisfied.
+
+
+We now briefly examine some generalizations of the simple Gaussian policy defined above that can be found in applications, note that all this cases are used in our experiments and in particular are used almost always in real applications:
+
+\paragraph{Multi-dimensional actions.}
+When actions are \newline multi-dimensional, factored Gaussian policies are typically employed, so the results extend trivially from the one-dimensional case. Actual multi-variate Gaussian distributions would require more calculations, but we do not expect substantially different results.
+
+\paragraph{Non-linear mean.}
+In complex continuous tasks, $\mu(s)$ often represents a deep neural network, or multi-layer perceptron, where $\vtheta$ are the weights of the network. The analysis of first and second order log-derivatives in such a scenario is beyond the scope of this paper.
+
+\paragraph{Adaptive variance.}
+It is a common practice to learn also the variance of the policy in order to adapt the degree of exploration. The variance (or diagonal covariance matrix in the multi-dimensional case) can be learned as a separate parameter or be state-dependent like the mean. In any case, adaptive variance must be carefully employed since it can clearly undermine all the three assumptions reported in Section  \ref{sec:assumption}.
+
+\section{Definition}\label{sec:definition}
+
+We give some additional definitions which will be useful in the proofs.
+
+\begin{definition}
+	For a random variable X:
+	\[
+	\Es{X} = \EVV[\tau_j\sim\pi(\cdot\vert\wt{\vtheta}^s)
+	\forall j\in\mathbf{N}]{X\vert\wt{\vtheta}^s},
+	\]
+	where $\wt{\vtheta}^s$ is defined in Algorithm \ref{alg:svrpg} and $\mathbf{N} = [0,\dots,N)$.
+\end{definition}
+
+We introduce the notation $\tau_{i,h}$ to denote the $h$-th trajectory collected using policy $\vtheta^{s+1}_i$ where $s$ will be clear from the context.
+
+\begin{definition}
+	For a random variable $X$:
+	\begin{align*}
+	\mathbb{E}_{t\vert s}\left[X\right] &\coloneqq 
+	\mathop{\mathbb{E}}_{\substack{\tau_j\sim\pi(\cdot\vert\wt{\vtheta}^s)\forall j \in N \\ \tau_{i,h}\sim\pi(\cdot\vert\vtheta^{s+1}_i) \forall h \in B, \text{ for $i=0,\dots,t$}}}{\left[X \vert \wt{\vtheta^s}\right]} \\
+	&\coloneqq \EVV[\tau_j\sim\pi(\cdot\vert\wt{\vtheta}^s)\forall j \in N]{
+		\EVV[\tau_{0,h}\sim\pi(\cdot\vert\vtheta_0^{s+1}) \forall h \in B]
+		{\dots
+			\EVV[\tau_{t,h}\sim\pi(\cdot\vert\vtheta_t^{s+1})\forall h \in B]
+			{X\vert\vtheta_t^{s+1}}
+			\dots
+			\vert\vtheta_0^{s+1}}
+		\vert\wt{\vtheta}^s}\\
+	&= \EVV[t-1|s]{\EVV[\tau_{t,h}\sim \pi(\cdot|\vtheta^{s+1}_t)]{X|\vtheta^{s+1}_t}}
+	\end{align*}
+	where the sequence $\wt{\vtheta}^s,\vtheta_0^{s+1},\dots,\vtheta_t^{s+1}$ is defined in Algorithm \ref{alg:svrpg}, $N = [0,\dots,N)$, and $B = [0,\dots,B)$. To avoid inconsistencies, we also define $\Ets[(-1)]{X} \coloneqq \Es{X}$.
+	
+\end{definition}
+
+Intuitively, the $\Ets{\cdot}$ operator computes the expected value with respect to the sampling of trajectories from the snapshot $\wt{\vtheta}^s$ up to the $t$-th iteration included. Note that the order in which expected values are taken is important since each $\vtheta_{t}^{s+1}$ is function of previously sampled trajectories and is used to sample new ones.
+
+\begin{definition}\label{def:var}
+	For random vectors X, Y:
+	\begin{align*}
+	\Covs{X}{Y} &\coloneqq \Tr\left(\Ets{(X-\Ets{X})(Y-\Ets{Y})^T}\right), \\
+	\Vars{X} &\coloneqq \Covs{X}{Y},
+	\end{align*}
+	where $\Tr(\cdot)$ denotes the trace of a matrix. From the linearity of expected value we have the following:
+	\begin{equation}\label{neweq:1}
+	\Vars{X} = \Es{\norm[]{X-\Es{X}}^2}
+	\end{equation}
+	$\Covts[t]{X}{Y}$ and $\Varts[t]{X}$ are defined in the same way from $\Ets[t]{X}$.
+\end{definition}
+
+\begin{definition}
+	The full gradient estimation error is:
+	\[
+	e_s \coloneqq \gradApp{\wt{\vtheta}^s}{N} - \gradJ{\wt{\vtheta}^s} 
+	\]
+\end{definition}
+
+\begin{definition}\label{def:ideal}
+	The ideal SVRPG gradient estimate is:
+	\begin{align*}
+	\gradIdeal{\vtheta_t^{s+1}} &\coloneqq 
+	\gradJ{\wt{\vtheta}^s}
+	%	+ \nabla\log\pi(\tau_i \vert \vtheta_t^{s+1})\Reward(\tau_i) 
+	+ g(\tau_i|\vtheta^{s+1}_t)
+	%	- \omega(\tau_i)\nabla\log\pi(\tau_i \vert \wt{\vtheta}^s)\Reward(\tau_i) 
+	- \omega(\tau_i|\vtheta^{s+1}_t, \wt{\vtheta}^s) g(\tau_i|\wt{\vtheta}^s)
+	\\
+	&= \gradBlack{\vtheta_t^{s+1}} - \gradApp{\wt{\vtheta}^s}{N} + \gradJ{\wt{\vtheta}^s} \\
+	&= \gradBlack{\vtheta_t^{s+1}} - e_s
+	\end{align*}
+\end{definition}
+
 
 \section{Ancillary Lemmas}\label{sec:ancillarylemmas}
+
+Before addressing the main convergence theorem, we prove some useful lemmas.
+
+
+\begin{lemma}\label{lemma:lsmooth}
+	Under Assumption \ref{ass:bounded_score}, $J(\vtheta)$ is L-smooth for some positive Lipschitz constant $L_J$.
+\end{lemma}
+\begin{proof}
+	By definition of $J(\vtheta)$:
+	\begin{align}
+	\Dij{J(\vtheta)}{\theta} 
+	&= \int_{\Tspace}\Dij{}{\theta}p(\tau|\vtheta)\Reward(\tau)\de \tau
+	\nonumber\\ 
+	&= \int_{\Tspace}p(\tau|\vtheta)\score{\vtheta}{\tau}\score{\vtheta}{\tau}^T\Reward(\tau)\de \tau\\ 
+	&+ \int_{\Tspace}\pol(\tau)\Dij{}{\theta}\log p(\tau|\vtheta)\Reward(\tau)\de \tau \nonumber\\
+	&\leq \sup_{\tau \in \mathcal{T}} \left\{\left|\Reward(\tau)\right|\right\} \left(H^2\GRADLOG^2+H\HESSLOG\right) \label{eq:0}\\
+	&= \frac{1-\gamma^H}{1-\gamma}RH\left(H\GRADLOG^2+\HESSLOG\right),\nonumber
+	\end{align}
+	where \ref{eq:0} is from Assumption \ref{ass:bounded_score}.
+	Since the Hessian is bounded, $J(\vtheta)$ is Lipschitz-smooth.
+\end{proof}
+
+\begin{lemma}\label{lemma:gsmooth}
+	Under Assumption \ref{ass:bounded_score}, whether we use the REINFORCE or the G(PO)MDP gradient estimator, $g(\tau\vert\vtheta)$ is Lipschitz continuous with Lipschitz constant $L_g$, \ie for any trajectory $\tau\in\Tspace$:
+	\[
+	\norm[2]{g(\tau\vert\vtheta)-g(\tau\vert\vtheta')}^2 \leq L_g\norm[2]{\vtheta-\vtheta'}^2.
+	\]
+\end{lemma}
+\begin{proof}
+	For both REINFORCE and G(PO)MDP, $g(\tau\vert\vtheta)$ is a linear combination of terms of the kind $\nabla \log \pi_{\vtheta}(a_t\vert s_t)\gamma^t r_t$ \citep{peters2008reinforcement}. These terms have bounded gradient from the second inequality of Assumption \ref{ass:bounded_score} and the fact that $|r_t|\leq R$. If a baseline is used in REINFORCE or G(PO)MDP, we only need the additional assumption that said baseline is bounded.
+	Bounded gradient implies Lipschitz continuity. Finally, the linear combination of Lipschitz continuous functions is Lipschitz continuous.
+\end{proof}
+
+\begin{lemma}\label{lemma:gbound}
+	Under Assumption \ref{ass:bounded_score}, whether we use the REINFORCE or the G(PO)MDP gradient estimator, for every $\tau\in\Tspace$ and $\vtheta\in\Theta$, there is a positive constant $\Gamma<\infty$ such that:
+	\[
+	\norm[2]{g(\tau\vert\vtheta)}^2 \leq \Gamma.
+	\]
+\end{lemma}
+\begin{proof}
+	For REINFORCE we have, from Assumption \ref{ass:bounded_score}:
+	\begin{align*}
+	\norm[2]{g(\tau\vert\vtheta)}^2 &=
+	\norm[2]{\score{\vtheta}{\tau}R(\tau)}^2 \\
+	&=\norm[2]{\left(\sum_{t=0}^{H-1}\score{\vtheta}{a_t\vert s_t}\right)\left(\sum_{t=0}^{H-1}\gamma^t r_t\right)}^2 \\
+	&\leq H^2G^2\frac{(1-\gamma^H)^2}{(1-\gamma)^2}R^2\dim(\vTheta) \coloneqq \Gamma
+	\end{align*}
+	For G(PO)MDP, we do not have a compact expression for $g$, but since it is derived from REINFORCE by neglecting some terms of the kind $\nabla \log \pi_{\vtheta}(a_t | s_t)\gamma^t r_t$ \cite{baxter2001infinite,peters2008reinforcement}, the above bound still holds.
+	If a baseline is used in REINFORCE or G(PO)MDP, we only need the additional assumption that said baseline is bounded.
+\end{proof}
+
+%New Lemma on Variance
+\begin{lemma}\label{lemma:varineq}
+	For any random vector X, the variance (as defined in Definition \ref{def:var}), can be bounded as follows:
+	\[
+	\Vars{X} \leq \Es{\norm[]{X}^2}.
+	\]
+\end{lemma}
+\begin{proof}
+	By using basic properties of expected value and scalar variance:
+	\begin{align*}
+	\Vars{X} = \Es{\norm[]{X-\Es{X}}^2} &= \Es{\sum_{i=1}^{\dim(X)}\left(X_i-\Es{X_i}\right)^2}\\
+	& = \sum_{i=1}^{\dim(X)}\Es{\left(X_i-\Es{X_i}\right)^2} \\
+	&\leq \sum_{i=1}^{\dim(X)}\Es{X_i^2} = \Es{\sum_{i=1}^{\dim(X)}X_i^2} = \Es{\norm[]{X}^2}.
+	\end{align*}
+\end{proof}
+
+%Lemma 2
+\begin{lemma}\label{lemma:aux2}
+	Under Assumption \ref{ass:bounded_score}
+	, the expected squared norm of the \acs{SVRPG} gradient can be bounded as follows:
+  \begin{align*}
+	\Ets{\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2} \leq
+	\Ets[t-1]{\norm[2]{\gradJ{\vtheta_t^{s+1}}}^2} 
+	&+\frac{L_g^2}{B}\Ets[t-1]{\norm[2]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}\\
+	&+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)}
+	\nonumber 
+	+\frac{\Gamma\VARIS}{B}
+	\end{align*}
+\end{lemma}
+\begin{proof}
+	For ease of notation denote $\omega(\tau_i) := \omega(\tau_i|\vtheta^{s+1}_t, \wt{\vtheta}^{s})$. Then,
+	\begingroup
+	\allowdisplaybreaks
+	\begin{align}
+	%            \Ets{\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2}
+	\mathbb{E}_{t|s}\big[&\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2\big] \\
+	&= \Ets{\norm[]{\gradApp{\wt{\vtheta}^s}{N}
+			+\frac{1}{B}\sum_{i=0}^{B-1} g(\tau_i\vert\vtheta_t^{s+1})
+			-\frac{1}{B}\sum_{i=0}^{B-1}
+			\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)}^2} \nonumber\\
+	%
+	&= \mathbb{E}_{t\vert s}\left[\left\|\gradApp{\wt{\vtheta}^s}{N}
+	+\frac{1}{B}\sum_{i=0}^{B-1}\left( 
+	g(\tau_i\vert\vtheta_t^{s+1}) -
+	\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)
+	 \right.\right.\nonumber
+	\\&\qquad\left.\left.
+	\pm \gradJ{\vtheta_t^{s+1}} \pm \gradJ{\wt{\vtheta}^s} 
+	% -\gradJ{\vtheta_t^{s+1}} + \gradJ{\wt{\vtheta}^s}
+	% +\gradJ{\vtheta_t^{s+1}} - \gradJ{\wt{\vtheta}^s}
+	\right\|^2\right] \nonumber\\
+	%
+	&\leq \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2}
+	+\Es{\norm[]{\gradApp{\wt{\vtheta}^s}{N} - \Es{\gradApp{\wt{\vtheta}^s}{N}}}^2} \nonumber\\
+	&\qquad+ 
+	\mathbb{E}_{t\vert s}\left[\left\|
+	\frac{1}{B}\sum_{i=0}^{B-1}\left(
+	g(\tau_i\vert\vtheta_t^{s+1}) -
+	\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)
+		\right.\right.\nonumber\\&\qquad\left.\left.
+	- \Ets{
+		\frac{1}{B}\sum_{i=0}^{B-1}\left(
+		g(\tau_i\vert\vtheta_t^{s+1}) -
+		\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)}\right\|^2\right] 
+	\nonumber\\
+	%
+	&= \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2}
+	+\Vars{\gradApp{\wt{\vtheta}^s}{N}} \nonumber\\
+	&\qquad+ 
+	\mathbb{E}_{t\vert s}\left[\left\|
+	\frac{1}{B}\sum_{i=0}^{B-1}\left(
+	g(\tau_i\vert\vtheta_t^{s+1}) -
+	\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)
+		\right.\right.\nonumber\\&\qquad\left.\left.
+	- \Ets{
+		\frac{1}{B}\sum_{i=0}^{B-1}\left(
+		g(\tau_i\vert\vtheta_t^{s+1}) -
+		\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)}\right\|^2\right] 
+	\label{neweq:2}\\
+	%
+	&= \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} 
+	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)}
+	\nonumber\\
+	&\qquad+ 
+	\mathbb{E}_{t\vert s}\left[\left\|
+	\frac{1}{B}\sum_{i=0}^{B-1}\left(
+	g(\tau_i\vert\vtheta_t^{s+1}) -
+	\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)
+	 \right.\right.\nonumber\\&\qquad\left.\left.
+	- \Ets{
+		\frac{1}{B}\sum_{i=0}^{B-1}\left(
+		g(\tau_i\vert\vtheta_t^{s+1}) -
+		\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)}\right\|^2\right] 
+	\label{eq:1}\\%
+	&\leq \Ets[t-1]{\norm[2]{\gradJ{\vtheta_t^{s+1}}}^2} 
+	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)} 
+	    \nonumber\\ &\qquad
+	+\Ets{\norm[2]{
+			\frac{1}{B}\sum_{i=0}^{B-1}\left(
+			g(\tau_i\vert\vtheta_t^{s+1}) -
+			\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)}^2} \label{eq:2}\\
+	%
+	&\leq \Ets[t-1]{\norm[2]{\gradJ{\vtheta_t^{s+1}}}^2} 
+	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)}
+     \nonumber\\ 	&\qquad
+	+ \frac{1}{B^2}\sum_{i=0}^{B-1}
+	\Ets{\norm[2]{
+			g(\tau_i\vert\vtheta_t^{s+1}) -
+			\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s) \pm g(\tau_i|\wt{\vtheta}^s) }^2} \nonumber\\
+	&\leq \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} 
+	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)}
+	\nonumber\\
+	&\qquad+
+	\frac{1}{B^2}\sum_{i=0}^{B-1}
+	\Ets{\norm[]{g(\tau_i\vert\vtheta_t^{s+1})
+			-g(\tau_i\vert\wt{\vtheta}^s)}^2} 
+         \nonumber\\ 	&\qquad
+	+\frac{1}{B^2}\sum_{i=0}^{B-1}
+	\Ets{\norm[]{g(\tau_i\vert\wt{\vtheta}^s) 
+			-\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)}^2} \nonumber\\
+	%
+	&\leq \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} 
+	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)}
+	\nonumber\\
+	&\qquad
+	+\frac{L_g^2}{B}\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}
+	+
+	\frac{1}{B^2}\sum_{i=0}^{B-1}
+	\Ets{\norm[]{(1 
+			-\omega(\tau_i))g(\tau_i\vert\wt{\vtheta}^s)}^2} \label{eq:3}\\
+	% ...
+	%\end{align}
+	%\begin{align}
+	% ...
+	&\leq \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} 
+	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)}
+	\nonumber\\
+	&\qquad+\frac{L_g^2}{B}\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}
+	+\Gamma\frac{1}{B^2}\sum_{i=0}^{B-1}\Ets{(\omega(\tau_i)-1)^2} \label{eq:4}\\
+	%
+	&= \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} 
+	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)}
+	\nonumber\\&\qquad
+	+\frac{L_g^2}{B}\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}
+	+\frac{\Gamma}{B^2}\sum_{i=0}^{B-1}\Varts{\omega(\tau_i)} \nonumber\\
+	%
+	&\leq \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} 
+	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)}
+	\nonumber\\ &\qquad
+	+\frac{L_g^2}{B}\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}
+	+\frac{\Gamma\VARIS}{B}, \label{eq:5}
+	\end{align}
+	\endgroup
+	where (\ref{neweq:2}) is from (\ref{neweq:1}), (\ref{eq:1}) is from the definition of $\gradApp{\vtheta}{N}$, (\ref{eq:2}) is from Lemma \ref{lemma:varineq}, (\ref{eq:3}) is from Lemma \ref{lemma:gsmooth}, 
+	(\ref{eq:4}) is from Lemma \ref{lemma:gbound}, and (\ref{eq:5}) is from Assumption \ref{ass:M2}.
+\end{proof}
+
+%Lemma 0
+\begin{lemma}\label{lemma:aux0}
+	Under Assumption \ref{ass:bounded_score}, for any function $\varphi(\vtheta_t^{s+1})$ which is deterministic for a fixed $\vtheta_t^{s+1}$:
+	\begin{align*}
+	\left|\Ets[t]{\dotprod{\gradBlack{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}}
+	-\Ets{\dotprod{\gradJ{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}}
+	\right| \\
+	\leq
+	\frac{1}{2N}\Vars{g(\cdot\vert\wt{\vtheta}^s)} +\frac{1}{2}\Ets[t-1]{\norm[]{\varphi(\vtheta_t^{s+1})}^2}
+	\end{align*}
+\end{lemma}
+\begin{proof}
+	\begin{align}
+	\Ets{\dotprod{\gradBlack{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}}
+	&=
+	\Ets{\dotprod{\gradIdeal{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} \nonumber\\
+	&\qquad+ \Ets[t-1]{\dotprod{e_s}{\varphi(\vtheta_t^{s+1})}} \label{eq:6}\\
+	&=
+	\Ets{\dotprod{\gradJ{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} \nonumber\\
+	&\qquad+ \Ets[t-1]{\dotprod{e_s}{\varphi(\vtheta_t^{s+1})}} \label{eq:7}\\
+	&=
+	\Ets{\dotprod{\gradJ{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} \nonumber\\
+	&\qquad+
+	\dotprod{\Ets{e_s}}{\Ets{\varphi(\vtheta_t^{s+1})}}\nonumber\\
+	&\qquad+\Covts[t-1]{\gradApp{\wt{\vtheta}^s}{N}}{\varphi(\vtheta_t^{s+1})}  \label{eq:new1}\\
+	&= 
+	\Ets{\dotprod{\gradJ{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} \nonumber\\
+	&\qquad+
+	\Covts[t-1]{\gradApp{\wt{\vtheta}^s}{N}}{\varphi(\vtheta_t^{s+1})} \label{eq:8}
+	\end{align}
+	where~\eqref{eq:6} is from Definition~\ref{def:ideal};~\eqref{eq:7} is from the fact that $\gradIdeal{\vtheta_t^{s+1}}$ is both unbiased and independent from $\varphi(\vtheta_t^{s+1})$ \wrt the sampling at time $t$ alone, which is not true for $\gradBlack{\vtheta_t^{s+1}}$;~\eqref{eq:new1} is from the fact that $\gradJ{\wt{\vtheta}^s}$ is constant \wrt $\Vars{\cdot}$;~\eqref{eq:8} is from $\Ets{e_s}=0$.
+	Hence:
+	\begin{align}
+	\left|\Ets{\dotprod{\gradBlack{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}}
+	\right.&-\left.\Ets{\dotprod{\gradJ{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}}\right|  \\
+	&=
+	\left|\Covts[t-1]{\gradApp{\wt{\vtheta}^s}{N}}{\varphi(\vtheta_t^{s+1})}\right|  
+	\nonumber\\
+	&\leq
+	\sqrt{\Vars{\gradApp{\wt{\vtheta}^s}{N}}} \cdot \sqrt{\Varts[t-1]{\varphi(\vtheta_t^{s+1})}} \label{eq:9a}\\
+	%
+	&\leq	
+	\frac{1}{2}\Vars{\gradApp{\wt{\vtheta}^s}{N}} +\frac{1}{2}\Varts[t-1]{\varphi(\vtheta_t^{s+1})}\label{eq:9}\\
+	%
+	&=
+	\frac{1}{2N}\Vars{g(\cdot\vert\wt{\vtheta}^s)} +\frac{1}{2}\Varts[t-1]{\varphi(\vtheta_t^{s+1})} \label{eq:10}\\
+	%
+	&\leq
+	\frac{1}{2N}\Vars{g(\cdot\vert\wt{\vtheta}^s)} +\frac{1}{2}\Ets[t-1]{\norm[]{\varphi(\vtheta_t^{s+1})}^2},
+	\label{neweq:3}
+	\end{align}
+	where~\eqref{eq:9a} comes from Cauchy-Schwarz inequality
+	\begin{align}
+	|\Cov(X,Y)| = |\EVV[]{(X-\mu_X)\transpose{(Y-\mu_Y)}}|.& \leq \EVV[]{(X-\mu_X)^2}^{1/2}\EVV[]{(Y-\mu_Y)^2}^{1/2}  \\
+	& = \sqrt{\Var(X) \Var(Y)},
+	\end{align}
+	\eqref{eq:9} is from Young's inequality,~\eqref{eq:10} is from the definition of $\gradApp{\vtheta}{N}$, and \eqref{neweq:3} is from Lemma \ref{lemma:varineq}.
+\end{proof}
+
+%Lemma 1
+\begin{lemma}\label{lemma:aux1}
+	Under Assumptions \ref{ass:bounded_score} ans \ref{ass:M2}, the expected squared norm of the true gradient $\gradJ{\vtheta_t^{s+1}}$, for appropriate choices of $\alpha_t\geq0$ and $\beta_t>0$, can be bounded as follows:
+	\[
+	\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} \leq
+	\frac{R_{t+1}^{s+1} - R_t^{s+1}}{\Psi_t} + \frac{d_tV}{N\Psi_t}
+	+\frac{f_tW}{B\Psi_t},
+	\]
+	where
+	\begin{align*}
+	&R_t^{s+1}\coloneqq \Ets[t-1]{J(\vtheta_t^{s+1}) - c_t\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}, \\
+	&c_{m} = 0, \\
+	&c_t = c_{t+1}\left(1+\alpha_t\beta_t+\alpha_t+\frac{\alpha_t^2L^2}{B}\right)+\frac{\alpha_t^2L^3}{2B}, \\
+	&\Psi_t = \alpha_t\left(\frac{1}{2}-\frac{c_{t+1}}{\beta_t}-\frac{\alpha_tL}{2}-\alpha_tc_{t+1}\right), \\
+	&d_t = \frac{\alpha_t}{2}\left(1+2c_{t+1}+\alpha_tL+2\alpha_tc_{t+1}\right), \\
+	&f_t = \alpha_t^2\frac{\Gamma(L+2c_{t+1})}{2},
+	\end{align*}
+	where $L=\max\left\{L_J,L_g\right\}$, \ie the greater of the Lipschitz constants from Lemmas \ref{lemma:lsmooth} and \ref{lemma:gsmooth}.
+	
+	In particular, the following constraints on $\alpha_t$ and $\beta_t$ are sufficient:
+	\begin{align*}
+	&0\leq\alpha_t < \frac{1-\nicefrac{2c_{t+1}}{\beta_t}}{L+2c_{t+1}} \\
+	&\beta_t > 2c_{t+1}.
+	\end{align*}
+\end{lemma}
+\begin{proof}
+	We have:
+	\begin{align}
+	\Ets{J(\vtheta_{t+1}^{s+1})} 
+	&\geq \Ets{J(\vtheta_t^{s+1})+\dotprod{\gradJ{\vtheta_t^{s+1}}}{\vtheta_{t+1}^{s+1}-\vtheta_t^{s+1}} - \frac{L}{2}\norm[]{\vtheta_{t+1}^{s+1}-\vtheta_t^{s+1}}^2} \label{eq:11}\\
+	&= \Ets{J(\vtheta_t^{s+1})+\alpha_t\dotprod{\gradJ{\vtheta_t^{s+1}}}{\gradBlack{\vtheta_t^{s+1}}} - \frac{\alpha_t^2L}{2}\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2} \label{eq:12}\\
+	&\geq
+	\Ets{J(\vtheta_t^{s+1})+\alpha_t\norm[]{\gradJ{\vtheta_t^{s+1}}}^2 - \frac{\alpha_t^2L}{2}\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2} \nonumber\\
+	&\qquad-
+	\frac{\alpha_t}{2N}\Vars{g(\cdot\vert\wt{\vtheta}^s)} -\frac{\alpha_t}{2}\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2}, \label{eq:13}
+	\end{align}
+	where~\eqref{eq:11} is from the L-smoothness of $J(\vtheta)$ \cite{nesterov2013introductory} and \eqref{eq:12} is from the \acs{SVRPG} update.
+	Inequality~\ref{eq:13} follows from Lemma~\ref{lemma:aux0} by noticing that $\nabla J(\vtheta^{s+1}_t)$ is a deterministic function given $\vtheta^{s+1}_t$. As a consequence, we can directly apply Lemma~\ref{lemma:aux0} with $\vphi(\vtheta_t^{s+1})\coloneqq\gradJ{\vtheta_t^{s+1}}$.
+	
+	Next, we have:
+	\begingroup
+	\allowdisplaybreaks
+	\begin{align}
+	\mathbb{E}_{t|s}\bigg[ & \norm[]{\vtheta_{t+1}^{s+1}-\wt{\vtheta}^s}^2 \bigg]
+	= \Ets{\norm[]{\vtheta_{t+1}^{s+1}- \vtheta_t^{s+1} + \vtheta_t^{s+1}-\wt{\vtheta}^s}^2} \nonumber\\
+	&=\Ets{\norm[]{\vtheta_{t+1}^{s+1}-\vtheta_{t}^{s+1}}^2+\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2+2\dotprod{\vtheta_{t+1}^{s+1}-\vtheta_{t}^{s+1}}{\vtheta_t^{s+1}-\wt{\vtheta}^s}} \label{eq:14a} \\
+	&= \Ets{\alpha_t^2\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2+\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2+2\alpha_t\dotprod{\gradBlack{\vtheta_t^{s+1}}}{\vtheta_t^{s+1}-\wt{\vtheta}^s}} \label{eq:14}\\
+	&\leq \Ets{\alpha_t^2\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2+\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2+2\alpha_t\dotprod{\gradJ{\vtheta_t^{s+1}}}{\vtheta_t^{s+1}-\wt{\vtheta}^s}} \nonumber\\ 
+	&\qquad+
+	\frac{\alpha_t}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)} +\alpha_t\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2} \label{eq:15}\\
+	%
+	&\leq \Ets{\alpha_t^2\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2+\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}\nonumber\\
+	&\qquad+2\alpha_t\Ets[t-1]{\left|\dotprod{\gradJ{\vtheta_t^{s+1}}}{\vtheta_t^{s+1}-\wt{\vtheta}^s}\right|} \nonumber\\ 
+	&\qquad+
+	\frac{\alpha_t}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)} +\alpha_t\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2} \nonumber\\
+	%
+	&\leq \Ets{\alpha_t^2\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2+\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}\nonumber\\
+	&\qquad+2\alpha_t\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}} \nonumber\\ 
+	&\qquad+
+	\frac{\alpha_t}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)} +\alpha_t\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2} \nonumber\\
+	%
+	&\leq \Ets{\alpha_t^2\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2+\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}\nonumber\\ 
+	&+2\alpha_t\Ets[t-1]{\frac{1}{2\beta_t}\norm[]{\gradJ{\vtheta_t^{s+1}}}^2+\frac{\beta_t}{2}\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2} \label{eq:16a}\\ 
+	&\qquad
+	+\frac{\alpha_t}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)} +\alpha_t\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}, \label{eq:16}
+	\end{align}
+	\endgroup
+	where~\eqref{eq:14a} is obtained using the triangular inequality,~\eqref{eq:14} is from the \acs{SVRPG} update,~\eqref{eq:15} is from Lemma~\ref{lemma:aux0} with\newline $\vphi(\vtheta_t^{s+1})\coloneqq\vtheta_t^{s+1}-\tilde{\vtheta}^s$,~\eqref{eq:16a} is from Cauchy-Schwarz inequality, and~\eqref{eq:16} is from Young's inequality in the `Peter-Paul' variant.
+	Let us consider the following function:
+	\begin{equation}\label{E:lyapunov.function}
+	R_{t+1}^{s+1} \coloneqq \Ets{J(\vtheta_{t+1}^{s+1}) - c_{t+1}\norm[]{\vtheta_{t+1}^{s+1}-\tilde{\vtheta}^s}^2}. 
+	\end{equation}
+	The objective is now to provide a lower bound to it.
+	\begingroup
+	\allowdisplaybreaks
+	\begin{align}
+	R_{t+1}^{s+1} 
+	&\geq	\Ets{J(\vtheta_t^{s+1}) - \frac{\alpha_t^2L}{2}\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2}
+	+ \EVV[t-1|s]{\frac{\alpha_t}{2}\norm[]{\gradJ{\vtheta_t^{s+1}}}^2}
+	\nonumber\\
+	&\qquad-
+	\frac{\alpha_t}{2N}\Vars{g(\cdot\vert\tilde{\vtheta}^s)}
+	-c_{t+1}\Ets{\norm[]{\vtheta_{t+1}^{s+1}-\tilde{\vtheta}^s}^2} \label{eq:17}\\
+	%
+	&\geq \Ets{J(\vtheta_t^{s+1}) - \frac{\alpha_t^2L}{2}\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2}\\
+	&\qquad+ \Ets[t-1]{\frac{\alpha_t}{2}\norm[]{\gradJ{\vtheta_t^{s+1}}}^2 }
+	-\frac{\alpha_t}{2N}\Vars{g(\cdot\vert\tilde{\vtheta}^s)} \nonumber\\
+	&\qquad -c_{t+1}\Ets{\alpha_t^2\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2+\norm[]{\vtheta_t^{s+1}-\tilde{\vtheta}^s}^2}
+	\nonumber\\
+	&\qquad-2c_{t+1}\alpha_t\Ets[t-1]{\frac{1}{2\beta_t}\norm[]{\gradJ{\vtheta_t^{s+1}}}^2+\frac{\beta_t}{2}\norm[]{\vtheta_t^{s+1}-\tilde{\vtheta}^s}^2} \nonumber\\ 
+	&\qquad
+	-c_{t+1}\frac{\alpha_t}{N}\Vars{g(\cdot\vert\tilde{\vtheta}^s)} -c_{t+1}\alpha_t\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\tilde{\vtheta}^s}^2} \label{eq:18}\\
+	%
+	&= \Ets[t-1]{J(\vtheta_t^{s+1})} - c_{t+1}\left(1+\alpha_t\beta_t+\alpha_t\right)\Ets[t-1]{\norm[]{\vtheta_{t}^{s+1}-\tilde{\vtheta}}^2} \nonumber\\
+	&\qquad-\alpha_t^2\left(\frac{L}{2}+c_{t+1}\right)\Ets{\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2} \nonumber\\
+	&\qquad+\frac{\alpha_t}{2}\left(1-\frac{2c_{t+1}}{\beta_t}\right)\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} \nonumber\\
+	&\qquad-\frac{\alpha_t}{2N}\left(1+2c_{t+1}\right)\Vars{g(\cdot\vert\tilde{\vtheta}^s)} \nonumber\\
+	%
+	&\geq  \Ets[t-1]{J(\vtheta_t^{s+1})} - c_{t+1}\left(1+\alpha_t\beta_t+\alpha_t\right)\Ets[t-1]{\norm[]{\vtheta_{t}^{s+1}-\tilde{\vtheta}}^2} \nonumber\\
+	&\qquad
+	-\alpha_t^2\left(\frac{L}{2}+c_{t+1}\right)\left(\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} 
+	+\frac{1}{N}\Vars{g(\cdot\vert\tilde{\vtheta}^s)}
+	\right.\nonumber\\
+	&\left.\qquad+\frac{L^2}{B}\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\tilde{\vtheta}^s}^2}
+	+\frac{\Gamma W}{B}\right)\nonumber\\
+	&\qquad+\frac{\alpha_t}{2}\left(1-2\frac{c_{t+1}}{\beta_t}\right)\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} \nonumber\\
+	&\qquad-\frac{\alpha_t}{2N}\left(1+2c_{t+1}\right)\Vars{g(\cdot\vert\tilde{\vtheta}^s)} \label{eq:19}\\
+	%
+	& = \Ets[t-1]{J(\vtheta_t^{s+1}) - \left(c_{t+1}\left(1+\alpha_t\beta_t+\alpha_t+\frac{\alpha_t^2L^2}{B}\right)+\frac{\alpha_t^2L^3}{2B}\right)\norm[]{\vtheta_{t}^{s+1}-\tilde{\vtheta}}^2} \nonumber\\
+	&\qquad
+	+\alpha_t\left(\frac{1}{2}-\frac{c_{t+1}}{\beta_t}-\frac{\alpha_tL}{2}-\alpha_tc_{t+1}\right)\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} \nonumber\\
+	&\qquad-\frac{\alpha_t}{2N}\left(1+2c_{t+1}+\alpha_tL+2\alpha_tc_{t+1}\right)\Vars{g(\cdot\vert\tilde{\vtheta}^s)} 
+	%    \nonumber\\ &\qquad
+	-\alpha_t^2\frac{(L+2c_{t+1})\Gamma\VARIS}{2B} \nonumber\\
+	%
+	&= R_t^{s+1}
+	+\Psi_t\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2}
+	-\frac{d_t}{N}\Vars{g(\cdot\vert\tilde{\vtheta}^s)}
+	-\frac{f_t}{B}\VARIS,\nonumber\\
+	&\geq R_t^{s+1}
+	+\Psi_t\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2}
+	-\frac{d_t}{N}\VARRF
+	-\frac{f_t}{B}\VARIS, \label{eq:20}
+	\end{align}
+	\endgroup
+	where~\eqref{eq:17} is from~\eqref{eq:13} noticing that \newline $\EVV[t|s]{\norm[]{\nabla J(\vtheta^{s+1}_t)}^2} = \EVV[t-1|s]{\norm[]{\nabla J(\vtheta^{s+1}_t)}^2}$,~\eqref{eq:18} is from~\eqref{eq:16},~\eqref{eq:19} is from Lemma~\ref{lemma:aux2}, and (\ref{eq:20}) is from Assumption \ref{ass:REINFORCE}.
+	To complete the proof, besides rearranging terms, we have to ensure that $\Psi_t>0$ for each $t$. This gives the constraints on $\alpha_t$ and $\beta_t$.
+\end{proof}
+
 
 \section{Main theorem}\label{sec:maintheorem}
