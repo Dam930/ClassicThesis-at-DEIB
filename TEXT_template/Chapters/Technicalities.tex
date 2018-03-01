@@ -125,7 +125,7 @@ These baselines are usually designed to minimize the variance of the gradient es
 On the other hand, there has been a surge of recent interest in variance reduction techniques for gradient optimization in supervised learning (\acs{SL}).
 Although these techniques have been mainly derived for finite-sum problems, we will show in \hyperref[chap:svrpg]{Chapter 3} how they can be used in \acs{RL}.
 In particular, we will show that the proposed \acs{SVRPG} algorithm can take the best of both worlds (\ie \acs{SL} and \acs{RL}).
-The section \ref{sec:svrg} aims at describing variance reduction techniques for finite-sum problems. In particular, we will present there the \acs{SVRG} algorithm that is at the core of this whole work, but before that, in the next section, we will give an introduction to the Natural Policy Gradient which will be used to shed more light on the future developments of our technique in \ref{chap:conclusion}.
+The section \ref{sec:svrg} aims at describing variance reduction techniques for finite-sum problems. In particular, we will present there the \acs{SVRG} algorithm that is at the core of this whole work, but before that, in the next section, we will give an introduction to the Natural Policy Gradient which will be used to shed more light on the future developments of our technique in Chapter  \ref{chap:conclusion}.
 
 
 \vspace{-0.05in}
@@ -187,7 +187,7 @@ Under this hypothesis, \acs{FG} ascent~\citep{cauchy1847methode} with a constant
 \[
 \ \lim_{t\rightarrow \infty}\frac{|a_{t+1}-a^*|}{|a_t-a^*|}=k
 \]
-where $a^*$ is teh seeked optimal solution.\newline
+where $a^*$ is the seeked optimal solution.\newline
 However, each iteration requires $N$ gradient computations, which can be too expensive for large values of $N$. Stochastic Gradient (\acs{SG}) ascent~\citep[\eg][]{robbins1951stochastic,bottou2004large} overcomes this problem by sampling a single sample $x_i$ per iteration, but a vanishing step size is required to control the variance introduced by sampling. As a consequence, the lower per-iteration cost is paid with a worse, sub-linear convergence rate \citep{nemirovskii1983problem}, which, in turn, means that $k_t$ changes from step to step and $k_t\rightarrow 1$ for $t \rightarrow \infty$.\newline
 Starting from \acs{SAG}, a series of variations to \acs{SG} have been proposed to achieve a better trade-off between convergence speed and cost per iteration: \eg \acs{SAG}~\citep{roux2012stochastic}, \acs{SVRG}~\citep{johnson2013accelerating}, \acs{SAGA}~\citep{defazio2014saga}, and Finito~\citep{defazio2014finito}. 
 The common idea is to reuse past gradient computations to reduce the variance of the current estimate.
