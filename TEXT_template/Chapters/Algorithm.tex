@@ -1,30 +1,30 @@
 \chapter{Stochastic Variance Reduced Policy Gradient} \label{chap:algorithm}
 \vspace{-0.05in}
-In online RL problems, the usual approach is to tune the batch size of SG to find the optimal trade-off between variance and speed.
-Recall that, compared to SL, the samples are not fixed in advance but we need to collect them at each policy change.
+In online \acs{RL} problems, the usual approach is to tune the batch size of \acs{SG} to find the optimal trade-off between variance and speed.
+Recall that, compared to \acs{SL}, the samples are not fixed in advance but we need to collect them at each policy change.
 Since this operation may be costly, we would like to minimize the number of interactions with the environment.
-For these reasons, we would like to apply SVRG to RL problems in order to limit the variance introduced by sampling trajectories, which would ultimately lead to faster convergence.
-However, a direct application of SVRG to RL is not possible due to the following issues:
+For these reasons, we would like to apply \acs{SVRG} to \acs{RL} problems in order to limit the variance introduced by sampling trajectories, which would ultimately lead to faster convergence.
+However, as previously introduced, a direct application of \acs{SVRG} to \acs{RL} is not possible due to the following issues:
 % In on-line policy gradient problems, SG is not really a choice, but is dictated by the necessity of interacting with an unknown environment.\todopir{I do not understand the meaning of this sentence. I would say that SG is not a choice by referring to papers that use batches}
 % We would like to apply SVRG to the policy gradient framework in order to limit the variance introduced by sampling trajectories, which would ultimately lead to faster convergence. In this scenario, the function $f(\vtheta)$ to optimize is $J(\vtheta)$ and the (implicit) dataset $\mathcal{D}$ is the set of all possible trajectories $\mathcal{T}$. Compared to the typical finite sum optimization scenario, we have the following additional challenges:
 \begin{description}
 	\item[Non-concavity:] the objective function $J(\vtheta)$ is typically non-concave.
-	\item[Infinite dataset:] the RL optimization cannot be expressed as a finite-sum problem. The objective function is an expected value over the trajectory density $p_{\vtheta}(\tau)$ of the total discounted reward, for which we would need an infinite dataset.
+	\item[Infinite dataset:] the \acs{RL} optimization cannot be expressed as a finite-sum problem. The objective function is an expected value over the trajectory density $p_{\vtheta}(\tau)$ of the total discounted reward, for which we would need an infinite dataset.
 	%    \item[Approximation:] the dataset $\mathcal{T}$ can be infinite, but we can only sample a finite number of trajectories;
 	\item[Non-stationarity:] the distribution of the samples changes over time. In particular, the value of the policy parameter $\vtheta$ influences the sampling process.
 \end{description}
 To deal with non-concavity, we require $J(\vtheta)$ to be $L$-smooth, which is a reasonable assumption for common policy classes such as Gaussian\footnote{See Appendix~\ref{app:gauss} for more details on the Gaussian policy case.} and softmax~\citep[\eg][]{Furmston2012unifying,pirotta2015lipschitz}.
 Because of the infinite dataset, we can only rely on an estimate of the full gradient.
-\citet{harikandeh2015stopwasting} analysed this scenario under the assumptions of $z$ being concave, showing that SVRG is robust to an inexact computation of the full gradient. In particular, it is still possible to recover the original convergence rate if the error decreases at an appropriate rate. In Section \ref{sec:conv} we will show how the estimation accuracy impacts on the convergence results with a non-concave objective.
-Finally, the non-stationarity of the optimization problem introduces a bias into the SVRG estimator in Eq.~\eqref{E:svrg.gradient.correction}.
-To overcome this limitation we employ importance weighting~\citep[\eg][]{rubinstein1981simulation,precup2000eligibility} to correct the distribution shift.
+\citet{harikandeh2015stopwasting} analysed this scenario under the assumptions of $h$ being concave, showing that \acs{SVRG} is robust to an inexact computation of the full gradient. In particular, it is still possible to recover the original convergence rate if the error decreases at an appropriate rate. In \hyperref[chap:convergence]{Chapter 4} we will show how the estimation accuracy impacts on the convergence results with a non-concave objective.
+Finally, the non-stationarity of the optimization problem introduces a bias into the \acs{SVRG} estimator in Eq.~\eqref{E:svrg.gradient.correction}.
+To overcome the latter issue we employ importance weighting~\citep[\eg][]{rubinstein1981simulation,precup2000eligibility} to correct the distribution shift.
 %Finally, we employ importance weighting~\citep[\eg]{rubinstein1981simulation,precup2000eligibility} to guarantee proper sampling of trajectories.
 
 
 \begin{algorithm}[h]
 	\caption{SVRPG}
 	\label{alg:svrpg}
-	\begin{algorithmic}
+	\begin{algorithmic}[1]
 		\STATE {\bfseries Input:} number of epochs $S$, epoch size $m$, step size $\alpha$, batch size $N$, mini-batch size $B$, gradient estimator $g$, initial parameter $\vtheta_{m}^0 := \wt{\vtheta}^0$
 		\FOR{$s=0$ {\bfseries to} $S-1$}
 		\STATE $\vtheta_0^{s+1} := \wt{\vtheta}^{s} = \vtheta_{m}^s$
@@ -57,7 +57,7 @@ To overcome this limitation we employ importance weighting~\citep[\eg][]{rubinst
 	\end{algorithmic}
 \end{algorithm} 
 
-We can now introduce Stochastic Variance-Reduced Policy Gradient (SVRPG) for a generic policy gradient estimator $g$. Pseudo-code is provided in Algorithm \ref{alg:svrpg}.
+We can now introduce \ac{SVRPG} for a generic policy gradient estimator $g$. Pseudo-code is provided in Algorithm \ref{alg:svrpg}.
 The overall structure is the same as Algorithm \ref{alg:svrg}, 
 but the snapshot gradient is not exact and the gradient estimate used between snapshots is corrected using importance weighting:\footnote{Note that $g$ can be any unbiased estimator, with or without baseline. The unbiasedness is required for theoretical results (\eg Appendix~\ref{A:gradient_estimators}).}
 \begin{align*}
@@ -65,7 +65,7 @@ but the snapshot gradient is not exact and the gradient estimate used between sn
 \end{align*}
 for any $t \in \{0,\ldots,m-1\}$,
 where $\wh{\nabla}_N J(\wt{\vtheta})$ is as in Eq.~\eqref{E:policygradient.estimate} where $\mathcal{D}_N$ is sampled using the snapshot policy $\pi_{\wt{\vtheta}}$, $\tau$ is sampled from the current policy $\pi_{\vtheta_t}$, and $\omega(\tau|\vtheta_t, \wt{\vtheta}) = \frac{p(\tau|\wt{\vtheta})}{p(\tau|\vtheta_t)}$ is an importance weight from $\pi_{\vtheta_t}$ to the snapshot policy $\pi_{\wt{\vtheta}}$. 
-Similarly to SVRG, we have that $\vtheta_0 := \wt{\vtheta}$, and the update is a FG step.
+Similarly to \acs{SVRG}, we have that $\vtheta_0 := \wt{\vtheta}$, and the update is a \acs{FG} step.
 Our update is still fundamentally on-policy since the weighting concerns only the correction term. However, this partial ``off-policyness'' represents an additional source of variance. This is a well-known issue of importance sampling~\citep[\eg][]{thomas2015high}. To mitigate it, we use mini-batches of trajectories of size $B \ll N$ to average the correction, \ie
 \begin{align}\label{E:svrpg.estimate.batch}
 \blacktriangledown J(\vtheta_{t}) &:= v_t= \wh{\nabla}_N J(\wt{\vtheta})\\ \notag
@@ -83,11 +83,11 @@ This property will be used to prove Lemma~\ref{L:svrpg.properties}.
 %\nabla\log\pi(\tau_i \vert \vtheta)\Reward(\tau_i) 
 %- \omega(\tau_i)\nabla\log\pi(\tau_i \vert \wt{\vtheta})\Reward(\tau_i)\right].
 %\end{align*}
-The use of mini-batches is also common practice in SVRG since it can yield a performance improvement even in the supervised case~\citep{harikandeh2015stopwasting,konevcny2016mini}. It is easy to show that the SVRPG estimator has the following, desirable properties:
+The use of mini-batches is also common practice in \acs{SVRG} since it can yield a performance improvement even in the supervised case~\citep{harikandeh2015stopwasting,konevcny2016mini}. It is easy to show that the \acs{SVRPG} estimator has the following, desirable properties:
 \begin{lemma}\label{L:svrpg.properties}
 	Let $\wh{\nabla}_N J(\vtheta)$ be an unbiased estimator of~\eqref{E:policygradient}
 	%Denote by $\wh{\nabla}_N^{\textsc{RF}} J(\vtheta)$ the REINFORCE estimator in~\eqref{E:policygradient.estimate} 
-	and let $\vtheta^* \in \argmin_{\vtheta} \{J(\vtheta)\}$. Then, the SVRG estimate in~\eqref{E:svrpg.estimate.batch} is \emph{unbiased}
+	and let $\vtheta^* \in \argmin_{\vtheta} \{J(\vtheta)\}$. Then, the \acs{SVRG} estimate in~\eqref{E:svrpg.estimate.batch} is \emph{unbiased}
 	\begin{equation}\label{eq:unbiased}
 	\mathop{\mathbb{E}}
 	\left[\blacktriangledown J(\vtheta)\right] = \gradJ{\vtheta}.
@@ -115,8 +115,8 @@ The use of mini-batches is also common practice in SVRG since it can yield a per
 %Note that it is essential that the trajectories used in the second and the third term are the same for the variance to vanish.
 %\end{proof}
 Previous results hold for both REINFORCE and G(PO)MDP.
-In particular, the latter result suggests that an SVRG-like algorithm using $\gradBlack{\vtheta}$ can achieve faster convergence, by performing much more parameter updates with the same data without introducing additional variance (at least asymptotically).
-Note that the randomized return value of Algorithm \ref{alg:svrpg} does not affect online learning at all, but will be used as a theoretical tool in the next section.
+In particular, the latter result suggests that an \acs{SVRG}-like algorithm using $\gradBlack{\vtheta}$ can achieve faster convergence, by performing much more parameter updates with the same data without introducing additional variance (at least asymptotically).
+Note that the randomized return value of Algorithm \ref{alg:svrpg} does not affect online learning at all, but will be used as a theoretical tool in the next chapter.
 
 \vspace{-0.05in}
 
