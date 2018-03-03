@@ -196,7 +196,7 @@ In particular, Stochastic Variance-Reduced Gradient (\acs{SVRG}) is often prefer
 \begin{algorithm}[h]
 	\caption{SVRG}
 	\label{alg:svrg}
-	\begin{algorithmic}
+	\begin{algorithmic}[1]
 		\STATE {\bfseries Input:} a dataset $\mathcal{D}_N$, number of epochs $S$, epoch size $m$, step size $\alpha$, initial parameter $\vtheta_{m}^0:=\wt{\vtheta}^0$
 		\FOR{$s=0$ {\bfseries to} $S-1$}
 		\STATE $\vtheta_0^{s+1} := \wt{\vtheta}^{s} = \vtheta_{m}^s$
@@ -219,19 +219,19 @@ In particular, Stochastic Variance-Reduced Gradient (\acs{SVRG}) is often prefer
 \end{algorithm} 
 
 The idea of \acs{SVRG} (Algorithm~\ref{alg:svrg}) is to alternate full and stochastic gradient updates. 
-Each $m = \mathcal{O}(N)$ iterations, a snapshot $\widetilde{\vtheta}$ of the current parameter is saved together with its \acs{FG} $\nabla f(\widetilde{\vtheta}) = \frac{1}{N} \sum_i \nabla h(x_i|\widetilde{\vtheta})$.
-Between snapshots, the parameter is updated with $\blacktriangledown f(\vtheta)$, a gradient estimate corrected using stochastic gradient. For any $t \in \{0,\ldots,m-1\}$:
+Each $m = \mathcal{O}(N)$ iterations, a snapshot $\widetilde{\vtheta}$ of the current parameter is saved together with its \acs{FG} $\nabla f(\widetilde{\vtheta}) = \frac{1}{N} \sum_i \nabla h(x_i|\widetilde{\vtheta})$ (see line 4 in Algorithm \ref{alg:svrg}).
+Between snapshots, the parameter is updated with $\blacktriangledown f(\vtheta)$, a gradient estimate corrected using stochastic gradient (see lines 7 and 8 of Algorithm \ref{alg:svrg}). For any $t \in \{0,\ldots,m-1\}$:
 \begin{equation}\label{E:svrg.gradient.correction}
         \blacktriangledown f(\vtheta_{t}) := v_t = \nabla f(\wt{\vtheta}) + \nabla h(x | \vtheta_t) - \nabla h(x | \wt{\vtheta}),
 \end{equation} 
-where $x$ is sampled uniformly at random from $\mathcal{D}_N$ (\ie $x \sim \mathcal{U}(\mathcal{D}_N)$).
+where $x$ is sampled uniformly at random from $\mathcal{D}_N$ (\ie $x \sim \mathcal{U}(\mathcal{D}_N)$)(see line 6 of Algorithm \ref{alg:svrg}).
 Note that $t=0$ corresponds to a \acs{FG} step (\ie $\blacktriangledown f(\vtheta_0) = \nabla f(\wt{\vtheta})$) since $\vtheta_0 := \wt{\vtheta}$.
 The corrected gradient $\blacktriangledown f(\vtheta)$ is an unbiased estimate of $\nabla f(\vtheta)$, and it is able to control the variance introduced by sampling even with a fixed step size, achieving a linear convergence rate without resorting to a plain \acs{FG}. Indeed, let $T$ be the number of iterations a \acs{FG} approach would require to converge to a local optimum, \acs{SVRG} is able to obtain an equally good solution computing a lot less gradients, precisely $m+N$ for each outer iteration of Algorithm \ref{alg:svrg} where we set $s\cdot m=T$ \citep{johnson2013accelerating}.
 
 \begin{algorithm}[h]
 	\caption{Mini-Batch-SVRG}
 	\label{alg:batch-svrg}
-	\begin{algorithmic}
+	\begin{algorithmic}[1]
 		\STATE {\bfseries Input:} a dataset $\mathcal{D}_N$, number of epochs $S$, epoch size $m$, step size $\alpha$, initial parameter $\vtheta_{m}^0:=\wt{\vtheta}^0$, batch size $b$
 		\FOR{$s=0$ {\bfseries to} $S-1$}
 		\STATE $\vtheta_0^{s+1} := \wt{\vtheta}^{s} = \vtheta_{m}^s$
@@ -260,7 +260,7 @@ Furthermore it is also possible to change euqation \ref{E:svrg.gradient.correcti
 \begin{equation}\label{E:batch.svrg.gradient.correction}
 \blacktriangledown f(\vtheta_{t}) := v_t = \nabla f(\wt{\vtheta}) + \frac{1}{\left|B\right|}\sum_{x_i\in B} \left(\nabla h(x_i | \vtheta_t) - \nabla h(x_i | \wt{\vtheta})\right)
 \end{equation}
-where $B$ is made of $b$ random samples taken from $\mathcal{D}_N$ with replacement. This gives birth to a Mini-Batch \acs{SVRG} \citep{reddi2016stochastic} (see Algorithm~\ref{alg:batch-svrg}), which further reduce the variance of the estimator. Notice that for both Algorithm \ref{alg:svrg} and Algorithm \ref{alg:batch-svrg} the parameters $S$ and $m$ are fundamental and should be properly set in order to get a good enough solution for the optimization problem the user wants to tackle.\newline
+where $B$ is made of $b$ random samples taken from $\mathcal{D}_N$ with replacement (see lines from 7 to 9 of Algorithm \ref{alg:batch-svrg}). This gives birth to a Mini-Batch \acs{SVRG} \citep{reddi2016stochastic}, which further reduce the variance of the estimator (see Algorithm~\ref{alg:batch-svrg}). Notice that for both Algorithm \ref{alg:svrg} and Algorithm \ref{alg:batch-svrg} the parameters $S$ and $m$ are fundamental and should be properly set in order to get a good enough solution for the optimization problem the user wants to tackle.\newline
 
 More recently, some extensions of variance reduction algorithms to the non-concave objectives have been proposed~\citep[\eg][]{allen2016variance,reddi2016stochastic,reddi2016fast}. In this scenario, $f$ is typically required to be L-smooth, \ie $\norm[2]{\nabla f(\vtheta') - \nabla f(\vtheta)} \leq L\norm[2]{\vtheta'-\vtheta}$ for each $\vtheta,\vtheta'\in\realspace^n$ and for some Lipschitz constant $L$. Under this hypothesis, the convergence rate of \acs{SG} is $O(\nicefrac{1}{\sqrt{T}})$ \citep{ghadimi2013stochastic}, \ie $T=O(\nicefrac{1}{\epsilon^2})$ iterations are required to get $\norm[2]{\nabla f(\vtheta)}^2\leq\epsilon$. Again, \acs{SVRG} achieves the same rate as \acs{FG} \citep{reddi2016stochastic}, which is $O(\frac{1}{T})$ in this case \citep{nesterov2013introductory}. The only additional requirement is to select $\vtheta^*$ uniformly at random among all the $\vtheta_k$ instead of simply setting it to the final value.
 \vspace{-0.05in}
