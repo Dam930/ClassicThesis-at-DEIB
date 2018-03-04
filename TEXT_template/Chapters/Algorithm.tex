@@ -8,14 +8,14 @@ However, as previously introduced, a direct application of \acs{SVRG} to \acs{RL
 % In on-line policy gradient problems, SG is not really a choice, but is dictated by the necessity of interacting with an unknown environment.\todopir{I do not understand the meaning of this sentence. I would say that SG is not a choice by referring to papers that use batches}
 % We would like to apply SVRG to the policy gradient framework in order to limit the variance introduced by sampling trajectories, which would ultimately lead to faster convergence. In this scenario, the function $f(\vtheta)$ to optimize is $J(\vtheta)$ and the (implicit) dataset $\mathcal{D}$ is the set of all possible trajectories $\mathcal{T}$. Compared to the typical finite sum optimization scenario, we have the following additional challenges:
 \begin{description}
-	\item[Non-concavity:] the objective function $J(\vtheta)$ is typically non-concave.
-	\item[Infinite dataset:] the \acs{RL} optimization cannot be expressed as a finite-sum problem. The objective function is an expected value over the trajectory density $p_{\vtheta}(\tau)$ of the total discounted reward, for which we would need an infinite dataset.
+	\item[\textbf{\MakeUppercase{N}on-concavity}:] the objective function $J(\vtheta)$ is typically non-concave.
+	\item[\textbf{\MakeUppercase{I}nfinite dataset}:] the \acs{RL} optimization cannot be expressed as a finite-sum problem. The objective function is an expected value over the trajectory density $p_{\vtheta}(\tau)$ of the total discounted reward, for which we would need an infinite dataset.
 	%    \item[Approximation:] the dataset $\mathcal{T}$ can be infinite, but we can only sample a finite number of trajectories;
-	\item[Non-stationarity:] the distribution of the samples changes over time. In particular, the value of the policy parameter $\vtheta$ influences the sampling process.
+	\item[\textbf{\MakeUppercase{N}on-stationarity}:] the distribution of the samples changes over time. In particular, the value of the policy parameter $\vtheta$ influences the sampling process.
 \end{description}
-To deal with non-concavity, we require $J(\vtheta)$ to be $L$-smooth, which is a reasonable assumption for common policy classes such as Gaussian\footnote{See Appendix~\ref{app:gauss} for more details on the Gaussian policy case.} and softmax~\citep[\eg][]{Furmston2012unifying,pirotta2015lipschitz}.
+To deal with non-concavity, we require $J(\vtheta)$ to be $L$-smooth, which is a reasonable assumption for common policy classes such as Gaussian\footnote{See Section \ref{sec:gaussianassumption} in \hyperref[chap:convergence]{Chapter 4} for more details on the Gaussian policy case.} and softmax~\citep[\eg][]{Furmston2012unifying,pirotta2015lipschitz}.
 Because of the infinite dataset, we can only rely on an estimate of the full gradient.
-\citet{harikandeh2015stopwasting} analysed this scenario under the assumptions of $h$ being concave, showing that \acs{SVRG} is robust to an inexact computation of the full gradient. In particular, it is still possible to recover the original convergence rate if the error decreases at an appropriate rate. In \hyperref[chap:convergence]{Chapter 4} we will show how the estimation accuracy impacts on the convergence results with a non-concave objective.
+\citet{harikandeh2015stopwasting} analysed this scenario under the assumptions of $h$ being concave, showing that \acs{SVRG} is robust to an inexact computation of the full gradient. In particular, it is still possible to recover the original convergence rate if the error decreases at an appropriate speed. In \hyperref[chap:convergence]{Chapter 4} we will show how the estimation accuracy impacts on the convergence results with a non-concave objective.
 Finally, the non-stationarity of the optimization problem introduces a bias into the \acs{SVRG} estimator in Eq.~\eqref{E:svrg.gradient.correction}.
 To overcome the latter issue we employ importance weighting~\citep[\eg][]{rubinstein1981simulation,precup2000eligibility} to correct the distribution shift.
 %Finally, we employ importance weighting~\citep[\eg]{rubinstein1981simulation,precup2000eligibility} to guarantee proper sampling of trajectories.
@@ -57,9 +57,9 @@ To overcome the latter issue we employ importance weighting~\citep[\eg][]{rubins
 	\end{algorithmic}
 \end{algorithm} 
 
-We can now introduce \ac{SVRPG} for a generic policy gradient estimator $g$. Pseudo-code is provided in Algorithm \ref{alg:svrpg}.
+We can now introduce \acs{SVRPG} for a generic policy gradient estimator $g$. Pseudo-code is provided in Algorithm \ref{alg:svrpg}.
 The overall structure is the same as Algorithm \ref{alg:svrg}, 
-but the snapshot gradient is not exact and the gradient estimate used between snapshots is corrected using importance weighting:\footnote{Note that $g$ can be any unbiased estimator, with or without baseline. The unbiasedness is required for theoretical results (\eg Appendix~\ref{A:gradient_estimators}).}
+but the snapshot gradient is not exact and the gradient estimate used between snapshots is corrected using importance weighting:\footnote{Note that $g$ can be any unbiased estimator, with or without baseline. The unbiasedness is required for theoretical results.}
 \begin{align*}
 \blacktriangledown J(\vtheta_{t}) &= \wh{\nabla}_N J(\wt{\vtheta}) + g(\tau|\vtheta_t) - \omega(\tau|\vtheta_t, \wt{\vtheta}) g(\tau|\wt{\vtheta})
 \end{align*}
@@ -75,7 +75,8 @@ Our update is still fundamentally on-policy since the weighting concerns only th
 	g(\tau_i|\vtheta_t) - \omega(\tau_i|\vtheta_t, \wt{\vtheta}) g(\tau_i|\wt{\vtheta})
 	\right]}_{c_t}.
 \end{align}
-It is worth noting that the full gradient and the correction term have the same expected value: $\EVV[\tau_i \sim p(\cdot|\vtheta_t)]{\frac{1}{B} \sum_{i=0}^{B-1} \omega(\tau_i|\vtheta_t, \wt{\vtheta}) g(\tau_i|\wt{\vtheta})} = \nabla J(\wt{\vtheta})$.\footnote{The reader can refer to Appendix~\ref{A:gradient_estimators} for off-policy gradients and variants of REINFORCE and G(PO)MDP.}
+This gradient estimator is computed in Algorithm \ref{alg:svrpg} using the lines 5, 7, 8 and 9.\newline
+It is worth noting that the full gradient and the correction term have the same expected value: $\EVV[\tau_i \sim p(\cdot|\vtheta_t)]{\frac{1}{B} \sum_{i=0}^{B-1} \omega(\tau_i|\vtheta_t, \wt{\vtheta}) g(\tau_i|\wt{\vtheta})} = \nabla J(\wt{\vtheta})$.\footnote{The reader can refer to \hyperref[chap:art]{Chapter 2} for off-policy gradients and variants of REINFORCE and G(PO)MDP.}
 This property will be used to prove Lemma~\ref{L:svrpg.properties}.
 %\begin{align*}
 %&\blacktriangledown J(\vtheta) = \frac{1}{N}\sum_{j=0}^{N-1}\nabla\log\pi(\tau_j \vert \wt{\vtheta})\Reward(\tau_j) +\\
@@ -119,4 +120,3 @@ In particular, the latter result suggests that an \acs{SVRG}-like algorithm usin
 Note that the randomized return value of Algorithm \ref{alg:svrpg} does not affect online learning at all, but will be used as a theoretical tool in the next chapter.
 
 \vspace{-0.05in}
-
