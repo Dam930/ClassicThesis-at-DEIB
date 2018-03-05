@@ -394,3 +394,12 @@
 \usepackage{classicthesis} 
 
 % ****************************************************************
+
+\makeatletter
+\newenvironment{myalign*}{\ifvmode\else\hfil\null\linebreak\fi
+	\hspace*{-\leftmargin}\minipage\textwidth
+	%\setlength{\abovedisplayskip}{0pt}%
+	\setlength{\abovedisplayshortskip}{\abovedisplayskip}%
+	\start@align\@ne\st@rredtrue\m@ne}%
+{\endalign\endminipage\linebreak\linebreak}
+\makeatother

@@ -167,7 +167,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	&= \int_{\Tspace}\Dij{}{\theta}p(\tau|\vtheta)\Reward(\tau)\de \tau
 	\nonumber\\ 
 	&= \int_{\Tspace}p(\tau|\vtheta)\score{\vtheta}{\tau}\score{\vtheta}{\tau}^T\Reward(\tau)\de \tau\\ 
-	&+ \int_{\Tspace}\pol(\tau)\Dij{}{\theta}\log p(\tau|\vtheta)\Reward(\tau)\de \tau \nonumber\\
+	&\qquad+ \int_{\Tspace}\pol(\tau)\Dij{}{\theta}\log p(\tau|\vtheta)\Reward(\tau)\de \tau \nonumber\\
 	&\leq \sup_{\tau \in \mathcal{T}} \left\{\left|\Reward(\tau)\right|\right\} \left(H^2\GRADLOG^2+H\HESSLOG\right) \label{eq:0}\\
 	&= \frac{1-\gamma^H}{1-\gamma}RH\left(H\GRADLOG^2+\HESSLOG\right),\nonumber
 	\end{align}
@@ -182,7 +182,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	\]
 \end{lemma}
 \begin{proof}
-	For both REINFORCE and G(PO)MDP, $g(\tau\vert\vtheta)$ is a linear combination of terms of the kind $\nabla \log \pi_{\vtheta}(a_t\vert s_t)\gamma^t r_t$ \citep{peters2008reinforcement}. These terms have bounded gradient from the second inequality of Assumption \ref{ass:bounded_score} and the fact that $|r_t|\leq R$. If a baseline is used in REINFORCE or G(PO)MDP, we only need the additional assumption that said baseline is bounded.
+	For both REINFORCE and G(PO)MDP, $g(\tau\vert\vtheta)$ is a linear combination of terms of the kind $\nabla \log \pi_{\vtheta}(a_t\vert s_t)\gamma^t r_t$ \citep{peters2008reinforcement}. These terms have bounded gradient from the second inequality of Assumption \ref{ass:bounded_score} and the fact that $|r_t|\leq R$. If a baseline is used in REINFORCE or G(PO)MDP, we only need the additional assumption that said baseline is bounded, but baseline  is arbitrary and for all value  does not compromise the correctness of gradient estimator, so we can assume it bounded.
 	Bounded gradient implies Lipschitz continuity. Finally, the linear combination of Lipschitz continuous functions is Lipschitz continuous.
 \end{proof}
 
@@ -201,7 +201,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	&\leq H^2G^2\frac{(1-\gamma^H)^2}{(1-\gamma)^2}R^2\dim(\vTheta) \coloneqq \Gamma
 	\end{align*}
 	For G(PO)MDP, we do not have a compact expression for $g$, but since it is derived from REINFORCE by neglecting some terms of the kind $\nabla \log \pi_{\vtheta}(a_t | s_t)\gamma^t r_t$ \citep{baxter2001infinite,peters2008reinforcement}, the above bound still holds.
-	If a baseline is used in REINFORCE or G(PO)MDP, we only need the additional assumption that said baseline is bounded.
+	If a baseline is used in REINFORCE or G(PO)MDP, we only need the additional assumption that said baseline is bounded as reported before.
 \end{proof}
 
 %New Lemma on Variance
@@ -239,7 +239,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	\allowdisplaybreaks
 	\begin{align}
 	%            \Ets{\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2}
-	\mathbb{E}_{t|s}\big[&\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2\big] \\
+	&\mathbb{E}_{t|s}\big[\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2\big] \\
 	&= \Ets{\norm[]{\gradApp{\wt{\vtheta}^s}{N}
 			+\frac{1}{B}\sum_{i=0}^{B-1} g(\tau_i\vert\vtheta_t^{s+1})
 			-\frac{1}{B}\sum_{i=0}^{B-1}
@@ -272,12 +272,12 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	%
 	&= \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2}
 	+\Vars{\gradApp{\wt{\vtheta}^s}{N}} \nonumber\\
-	&\qquad+ 
+	&+ 
 	\mathbb{E}_{t\vert s}\left[\left\|
 	\frac{1}{B}\sum_{i=0}^{B-1}\left(
 	g(\tau_i\vert\vtheta_t^{s+1}) -
 	\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)
-		\right.\right.\nonumber\\&\qquad\left.\left.
+	%	\right.\right.\nonumber\\&\qquad\left.\left.
 	- \Ets{
 		\frac{1}{B}\sum_{i=0}^{B-1}\left(
 		g(\tau_i\vert\vtheta_t^{s+1}) -
@@ -287,12 +287,12 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	&= \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} 
 	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)}
 	\nonumber\\
-	&\qquad+ 
+	&+ 
 	\mathbb{E}_{t\vert s}\left[\left\|
 	\frac{1}{B}\sum_{i=0}^{B-1}\left(
 	g(\tau_i\vert\vtheta_t^{s+1}) -
 	\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)
-	 \right.\right.\nonumber\\&\qquad\left.\left.
+%	 \right.\right.\nonumber\\&\qquad\left.\left.
 	- \Ets{
 		\frac{1}{B}\sum_{i=0}^{B-1}\left(
 		g(\tau_i\vert\vtheta_t^{s+1}) -
@@ -300,7 +300,6 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	\label{eq:1}\\%
 	&\leq \Ets[t-1]{\norm[2]{\gradJ{\vtheta_t^{s+1}}}^2} 
 	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)} 
-	    \nonumber\\ &\qquad
 	+\Ets{\norm[2]{
 			\frac{1}{B}\sum_{i=0}^{B-1}\left(
 			g(\tau_i\vert\vtheta_t^{s+1}) -
@@ -320,7 +319,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	\frac{1}{B^2}\sum_{i=0}^{B-1}
 	\Ets{\norm[]{g(\tau_i\vert\vtheta_t^{s+1})
 			-g(\tau_i\vert\wt{\vtheta}^s)}^2} 
-         \nonumber\\ 	&\qquad
+%         \nonumber\\ 	&\qquad
 	+\frac{1}{B^2}\sum_{i=0}^{B-1}
 	\Ets{\norm[]{g(\tau_i\vert\wt{\vtheta}^s) 
 			-\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)}^2} \nonumber\\
@@ -335,7 +334,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	\Ets{\norm[]{(1 
 			-\omega(\tau_i))g(\tau_i\vert\wt{\vtheta}^s)}^2} \label{eq:3}\\
 	% ...
-	%\end{align}
+	%\end{align*}
 	%\begin{align}
 	% ...
 	&\leq \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} 
@@ -374,21 +373,16 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 \end{lemma}
 \begin{proof}
 	\begin{align}
-	\Ets{\dotprod{\gradBlack{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}}
-	&=
-	\Ets{\dotprod{\gradIdeal{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} \nonumber\\
-	&\qquad+ \Ets[t-1]{\dotprod{e_s}{\varphi(\vtheta_t^{s+1})}} \label{eq:6}\\
-	&=
-	\Ets{\dotprod{\gradJ{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} \nonumber\\
-	&\qquad+ \Ets[t-1]{\dotprod{e_s}{\varphi(\vtheta_t^{s+1})}} \label{eq:7}\\
-	&=
-	\Ets{\dotprod{\gradJ{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} \nonumber\\
-	&\qquad+
-	\dotprod{\Ets{e_s}}{\Ets{\varphi(\vtheta_t^{s+1})}}\nonumber\\
+	&\Ets{\dotprod{\gradBlack{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}}\\
+	&=\Ets{\dotprod{\gradIdeal{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} 
+	+ \Ets[t-1]{\dotprod{e_s}{\varphi(\vtheta_t^{s+1})}} \label{eq:6}\\
+	&=\Ets{\dotprod{\gradJ{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} 
+	+ \Ets[t-1]{\dotprod{e_s}{\varphi(\vtheta_t^{s+1})}} \label{eq:7}\\
+	&= \Ets{\dotprod{\gradJ{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} 
+	+\dotprod{\Ets{e_s}}{\Ets{\varphi(\vtheta_t^{s+1})}}\nonumber\\
 	&\qquad+\Covts[t-1]{\gradApp{\wt{\vtheta}^s}{N}}{\varphi(\vtheta_t^{s+1})}  \label{eq:new1}\\
 	&= 
-	\Ets{\dotprod{\gradJ{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} \nonumber\\
-	&\qquad+
+	\Ets{\dotprod{\gradJ{\vtheta_t^{s+1}}}{\varphi(\vtheta_t^{s+1})}} +
 	\Covts[t-1]{\gradApp{\wt{\vtheta}^s}{N}}{\varphi(\vtheta_t^{s+1})} \label{eq:8}
 	\end{align}
 	where~\eqref{eq:6} is from Definition~\ref{def:ideal};~\eqref{eq:7} is from the fact that $\gradIdeal{\vtheta_t^{s+1}}$ is both unbiased and independent from $\varphi(\vtheta_t^{s+1})$ \wrt the sampling at time $t$ alone, which is not true for $\gradBlack{\vtheta_t^{s+1}}$;~\eqref{eq:new1} is from the fact that $\gradJ{\wt{\vtheta}^s}$ is constant \wrt $\Vars{\cdot}$;~\eqref{eq:8} is from $\Ets{e_s}=0$.
@@ -496,8 +490,8 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	\begingroup
 	\allowdisplaybreaks
 	\begin{align}
-	R_{t+1}^{s+1} 
-	&\geq	\Ets{J(\vtheta_t^{s+1}) - \frac{\alpha_t^2L}{2}\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2}
+	&R_{t+1}^{s+1} 
+	\geq	\Ets{J(\vtheta_t^{s+1}) - \frac{\alpha_t^2L}{2}\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2}
 	+ \EVV[t-1|s]{\frac{\alpha_t}{2}\norm[]{\gradJ{\vtheta_t^{s+1}}}^2}
 	\nonumber\\
 	&\qquad-
@@ -514,8 +508,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	-c_{t+1}\frac{\alpha_t}{N}\Vars{g(\cdot\vert\tilde{\vtheta}^s)} -c_{t+1}\alpha_t\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\tilde{\vtheta}^s}^2} \label{eq:18}\\
 	%
 	&= \Ets[t-1]{J(\vtheta_t^{s+1})} - c_{t+1}\left(1+\alpha_t\beta_t+\alpha_t\right)\Ets[t-1]{\norm[]{\vtheta_{t}^{s+1}-\tilde{\vtheta}}^2} \nonumber\\
-	&\qquad-\alpha_t^2\left(\frac{L}{2}+c_{t+1}\right)\Ets{\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2} \nonumber\\
-	&\qquad+\frac{\alpha_t}{2}\left(1-\frac{2c_{t+1}}{\beta_t}\right)\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} \nonumber\\
+	&\qquad-\alpha_t^2\left(\frac{L}{2}+c_{t+1}\right)\Ets{\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2} +\frac{\alpha_t}{2}\left(1-\frac{2c_{t+1}}{\beta_t}\right)\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} \nonumber\\
 	&\qquad-\frac{\alpha_t}{2N}\left(1+2c_{t+1}\right)\Vars{g(\cdot\vert\tilde{\vtheta}^s)} \nonumber\\
 	%
 	&\geq  \Ets[t-1]{J(\vtheta_t^{s+1})} - c_{t+1}\left(1+\alpha_t\beta_t+\alpha_t\right)\Ets[t-1]{\norm[]{\vtheta_{t}^{s+1}-\tilde{\vtheta}}^2} \nonumber\\
@@ -525,8 +518,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	\right.\nonumber\\
 	&\left.\qquad+\frac{L^2}{B}\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\tilde{\vtheta}^s}^2}
 	+\frac{\Gamma W}{B}\right)\nonumber\\
-	&\qquad+\frac{\alpha_t}{2}\left(1-2\frac{c_{t+1}}{\beta_t}\right)\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} \nonumber\\
-	&\qquad-\frac{\alpha_t}{2N}\left(1+2c_{t+1}\right)\Vars{g(\cdot\vert\tilde{\vtheta}^s)} \label{eq:19}\\
+	&\qquad+\frac{\alpha_t}{2}\left(1-2\frac{c_{t+1}}{\beta_t}\right)\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} -\frac{\alpha_t}{2N}\left(1+2c_{t+1}\right)\Vars{g(\cdot\vert\tilde{\vtheta}^s)} \label{eq:19}\\
 	%
 	& = \Ets[t-1]{J(\vtheta_t^{s+1}) - \left(c_{t+1}\left(1+\alpha_t\beta_t+\alpha_t+\frac{\alpha_t^2L^2}{B}\right)+\frac{\alpha_t^2L^3}{2B}\right)\norm[]{\vtheta_{t}^{s+1}-\tilde{\vtheta}}^2} \nonumber\\
 	&\qquad
@@ -629,7 +621,7 @@ By analysing the upper-bound in Theorem~\ref{theo:convergence}:
 \frac{\zeta}{N}
 +\frac{\xi}{B},
 \end{align*}
- we observe that: I) the $\mathcal{O}(\nicefrac{1}{T})$ term is coherent with results on non-concave SVRG~\citep[\eg][]{reddi2016stochastic}; II) the $\mathcal{O}(\nicefrac{1}{N})$ term is due to the FG approximation and is analogous to the one in~\citep{harikandeh2015stopwasting}; III) the $\mathcal{O}(\nicefrac{1}{B})$ term is due to importance weighting.
+ we observe that: I) the $\mathcal{O}(\nicefrac{1}{T})$ term is coherent with results on non-concave SVRG~\citep[\eg][]{reddi2016stochastic}; T is the number of iterations. We would like to highlight up to now (e.g. in \acs{SG}) the convergence rate was $\mathcal{O}(\nicefrac{1}{T^2})$ so this result is of great impact in theoretical \acs{RL}. II) the $\mathcal{O}(\nicefrac{1}{N})$ term is due to the FG approximation and is analogous to the one in~\citep{harikandeh2015stopwasting}; This term can be annulled with the increasing of $N$ III) the $\mathcal{O}(\nicefrac{1}{B})$ term is due to the variance of importance weighting. The variance of importance weighting can go against our prime aim that is the variance reduction.  This term can be annulled with the increasing of $B$.
 To achieve asymptotic convergence, the batch size $N$ and the mini-batch size $B$ should increase over time. 
 In practice, it is enough to choose $N$ and $B$ large enough to make the second and the third term negligible, \ie to mitigate the variance introduced by FG approximation and importance sampling, respectively.
 Once the last two terms can be neglected, the number of trajectories needed to achieve $\norm[2]{\gradJ{\vtheta}}^2\leq\epsilon$ is $O(\frac{B+\nicefrac{N}{m}}{\epsilon})$. In this sense, an advantage over batch gradient ascent can be achieved with properly selected meta-parameters. 
