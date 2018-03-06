@@ -1,12 +1,34 @@
 \chapter{Convergence Guarantees of SVRPG} \label{chap:convergence}
 In this chapter, we state the convergence guarantees for \acs{SVRPG}  with REINFORCE or G(PO)MDP gradient estimator.
 We mainly leverage on the recent analysis of non-concave \acs{SVRG} (\cite{reddi2016stochastic,allen2016variance}).
-As reported in Chapter \ref{chap:algorithm} the direct application of \acs{SVRG} to \acs{RL} is not trivial due to the following issues: Non-concavity, Infinite dataset and Non-stationarity.
-Each of the three challenges presented can potentially prevent convergence, so we need additional assumptions that we present in Section \ref{sec:assumption}. In Section \ref{sec:gaussianassumption} we show how Gaussian policies satisfy these assumptions. In Section \ref{sec:definition} we give some additional definitions which will be useful in the proofs. In Section \ref{sec:ancillarylemmas} we provide the ancillary lemmas for convergence proof. In Section \ref{sec:maintheorem} we provide the enunciated and the proof of the convergence theorem. Finally in Section \ref{sec:consequence} we provide the consequences of the convergence theorem.
+As reported in Chapter \ref{chap:algorithm}, the direct application of \acs{SVRG} to \acs{RL} is not trivial due to the following issues: non-concavity, infinite dataset and non-stationarity.
+Each of these challenges presented can potentially prevent convergence, so we need additional assumptions that we present in Section \ref{sec:assumption}. In Section \ref{sec:gaussianassumption} we show how Gaussian policies satisfy these assumptions. In Section \ref{sec:definition} we give some additional definitions which will be useful in the proofs. In Section \ref{sec:ancillarylemmas} we provide the ancillary lemmas for the convergence proof. In Section \ref{sec:maintheorem} we provide the statement and the proof of the convergence theorem. Finally in Section \ref{sec:consequence} we discuss the consequences of the convergence theorem.\newline
+We state now the convergence guarantees for \acs{SVRPG}:
+
+\begin{theorem}\label{theo:convergence}
+	Assume the REINFORCE or the G(PO)MDP gradient estimator is used in SVRPG:
+	\begin{align}
+	\blacktriangledown J(\vtheta_{t}) &:= v_t= \wh{\nabla}_N J(\wt{\vtheta})\\ \notag
+	& \quad{} + 
+	\frac{1}{B} \sum_{i=0}^{B-1} \left[
+	g(\tau_i|\vtheta_t) - \omega(\tau_i|\vtheta_t, \wt{\vtheta}) g(\tau_i|\wt{\vtheta})
+	\right].
+	\end{align}.
+	Under Assumptions~\ref{ass:bounded_score}, \ref{ass:REINFORCE} and \ref{ass:M2}, the parameter vector $\vtheta_A$ returned by Algorithm~\ref{alg:svrpg} after $T=m\times S$ iterations has, for some positive constants $\psi,\zeta, \xi$ and for proper choice of the step size $\alpha$ and the epoch size $m$, the following property:
+	\begin{align*}
+	&\EVV[]
+	{\norm[2]{\nabla J(\vtheta_A)}^2} 
+	\leq
+	\frac{J(\vtheta^*)-J(\vtheta_0)}{\psi T} +
+	\frac{\zeta}{N}
+	+\frac{\xi}{B},
+	\end{align*}
+	where $\psi,\zeta,\xi$ depend only on $\GRADLOG,\HESSLOG,\VARRF,\VARIS,\alpha$ and $m$.
+\end{theorem}
 
 \section{Assumptions}\label{sec:assumption}
 
-As reported before we need additional assumptions for addressing the three issues of \acs{RL}:
+As reported before we need additional assumptions for addressing the three issues of \acs{SVRG} applied to \acs{RL}:
 
 \textit{1) Non-concavity.} A common assumption, in this case, is to assume the objective function to be $L$-smooth (\cite{reddi2016stochastic,allen2016variance}).
 However, in \acs{RL} we can consider the following assumption which is sufficient for the $L$-smoothness of the objective (see Lemma~\ref{lemma:lsmooth}).
@@ -21,7 +43,7 @@ However, in \acs{RL} we can consider the following assumption which is sufficien
 \end{assumption}
 
 \textit{2) FG Approximation.}
-Since we cannot compute an exact full gradient due to the infinity of dataset, we require the variance of the estimator of gradient to be bounded.
+Since we cannot compute an exact full gradient due to the infinite dataset, we require the variance of the gradient estimator to be bounded.
 This assumption is similar in spirit to the one in ~\cite{harikandeh2015stopwasting}.
 \begin{assumption}\label{ass:REINFORCE}
 	There is a constant $V<\infty$ such that, for any policy $\pol$:
@@ -31,7 +53,7 @@ This assumption is similar in spirit to the one in ~\cite{harikandeh2015stopwast
 \end{assumption}
 
 \textit{3) Non-stationarity.} 
-Similarly to what done in SL~\citep{cortes2010learning}, we require the variance of the importance weight to be bounded.
+Similarly to what done in \acs{SL} literature ~\citep{cortes2010learning}, we require the variance of the importance weight to be bounded.
 \begin{assumption}\label{ass:M2}
 	There is a constant $W<\infty$ such that, for each pair of policies encountered in Algorithm~\ref{alg:svrpg} and for each trajectory,
 	\[
@@ -39,10 +61,10 @@ Similarly to what done in SL~\citep{cortes2010learning}, we require the variance
 	\]
 \end{assumption}
 Differently from Assumptions~\ref{ass:bounded_score} and ~\ref{ass:REINFORCE}, Assumption~\ref{ass:M2} must be enforced by a proper handling of the epoch size $m$.\newline
-Given this assumptions we can prove convergence guaranties of \acs{SVRPG}.
+Given this assumptions, as shown in the next sections, we can handle the challenges and prove convergence guaranties of \acs{SVRPG}. Before that we need to give some definition and some lemma for a better  understanding of the final proof.
 
-\section{Assumptions in gaussian policies}\label{sec:gaussianassumption}
-We can now provide more details on the applicability of convergence guaranties on the case of Gaussian policies. Gaussian policies are the most used policies in practice. In our experiment we use Gaussian policies too. We start to analyze the case of one-dimensional bounded action space $\mathcal{A}\subset\mathbb{R}$, linear mean $\mu(s) = \vtheta^T\vphi(s)$ and fixed standard deviation $\sigma$:
+\section{Validity of assumptions for gaussian policies}\label{sec:gaussianassumption}
+We can now provide more details on the applicability of convergence guarantees on the case of Gaussian policies. Gaussian policies are the most commonly policies in continuous RL applications, an example can be founded in \cite{kober2013reinforcement}. Gaussian policies are also used in our experiments, reported in Chapter \ref{chap:exp}. We start by analyzing the case of one-dimensional bounded action space $\mathcal{A}\subset\mathbb{R}$, linear mean $\mu(s) = \vtheta^T\vphi(s)$ and fixed standard deviation $\sigma$, which corresponds to the following probability density function::
 \[
 \pi_{\vtheta}(a\vert s) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left\{
 -\frac{(\vtheta^T\vphi(s) - a)^2}{2\sigma^2}\right\},
@@ -54,10 +76,10 @@ For the Gaussian policy defined above, it's easy to show that:
 &\nabla_{\theta_i}\log\pi_{\vtheta}(\tau) =  \phi_i(s)\frac{a-\vtheta^T\phi(s)}{\sigma^2},\\
 &\frac{\partial^2}{\partial\theta_i\partial\theta_j}\log\pi_{\vtheta}(\tau) = \frac{\phi_i(s)\phi_j(s)}{\sigma^2}.
 \end{align*}
-Hence, Assumption \ref{ass:bounded_score} is automatically satisfied \footnote{This relies on the fact that $\vtheta^T\phi(s)$ lies in bounded $\Aspace$. In practice, this is usually enforced by clipping the action selected by $\pi_{\vtheta}$. A more rigorous way would be to employ the truncated Gaussian distribution.} by taking $\GRADLOG = \frac{M_{\phi}|\Aspace|}{\sigma^2}$ and $\HESSLOG = \frac{M_{\phi}^2}{\sigma^2}$.
+Hence, Assumption \ref{ass:bounded_score} is automatically satisfied \footnote{This relies on the fact that $\vtheta^T\phi(s)$ lies in bounded $\Aspace$. In practice, this is usually enforced by clipping the action selected by $\pi_{\vtheta}$. A more rigorous way would be to employ the truncated Gaussian distribution or a squashing function.} by taking $\GRADLOG = \frac{M_{\phi}|\Aspace|}{\sigma^2}$ and $\HESSLOG = \frac{M_{\phi}^2}{\sigma^2}$.
 \par
 
-As mentioned, \citep{pirotta2013adaptive} provides a bound on the variance of the REINFORCE estimator, adapted from \cite{zhao2011analysis}, which does not depend on $\vtheta$:
+As mentioned, the work of \cite{pirotta2013adaptive} provides a bound on the variance of the REINFORCE estimator, adapted from \cite{zhao2011analysis}, which does not depend on $\vtheta$:
 \begin{align*}
 \Var\left[\gradApp{\theta_i}{N}\right] \leq \frac{R^2M_{\phi}^2H(1-\gamma^H)^2}{N\sigma^2(1-\gamma)^2}.
 \end{align*}
@@ -65,21 +87,23 @@ The same authors provide a similar bound for G(PO)MDP. So we can considered Assu
 
 
 It is noted in \cite{cortes2010learning} that, for any two Gaussian distributions $\mathcal{N}(\mu_1,\sigma_1)$ and $\mathcal{N}(\mu_2,\sigma_2)$, the variance of the importance weights from the latter to the former is bounded whenever $\sigma_2 > \frac{\sqrt{2}}{2}\sigma_1$. This is automatically satisfied by our fixed-variance Gaussian policies, since $\sigma_2=\sigma_1=\sigma$.
-So, also Assumption \ref{ass:M2} has been satisfied.
+We have demonstrated that the variance of importance weight is not infinite, by enforcing also that
+$\mathbb{V}ar\left[\omega(\tau| \vtheta_1, \vtheta_2)\right] \leq \VARIS$ we need a proper handling of the epoch size $m$.
+So, also Assumption \ref{ass:M2} is been satisfied.
 
 
-We now briefly examine some generalizations of the simple Gaussian policy defined above that can be found in applications, note that all this cases are used in our experiments and in particular are used almost always in real applications:
+We now briefly examine some generalizations of the simple Gaussian policy defined above that can be found in applications. Note that all this variants are employed in our experiments and in particular are used almost always in real applications:
 
 \paragraph{Multi-dimensional actions.}
 When actions are \newline multi-dimensional, factored Gaussian policies are typically employed, so the results extend trivially from the one-dimensional case. Actual multi-variate Gaussian distributions would require more calculations, but we do not expect substantially different results.
 
 \paragraph{Non-linear mean.}
-In complex continuous tasks, $\mu(s)$ often represents a deep neural network, or multi-layer perceptron, where $\vtheta$ are the weights of the network. The analysis of first and second order log-derivatives in such a scenario is beyond the scope of this paper.
+In complex continuous tasks, $\mu(s)$ often represents a deep neural network, or multi-layer perceptron, where $\vtheta$ are the weights of the network. The analysis of first and second order log-derivatives in such a scenario is beyond the scope of this thesis.
 
 \paragraph{Adaptive variance.}
 It is a common practice to learn also the variance of the policy in order to adapt the degree of exploration. The variance (or diagonal covariance matrix in the multi-dimensional case) can be learned as a separate parameter or be state-dependent like the mean. In any case, adaptive variance must be carefully employed since it can clearly undermine all the three assumptions reported in Section  \ref{sec:assumption}.
 
-\section{Definition}\label{sec:definition}
+\section{Definitions}\label{sec:definition}
 
 We give some additional definitions which will be useful in the proofs.
 
@@ -92,7 +116,7 @@ We give some additional definitions which will be useful in the proofs.
 	where $\wt{\vtheta}^s$ is defined in Algorithm \ref{alg:svrpg} and $\mathbf{N} = [0,\dots,N)$.
 \end{definition}
 
-We introduce the notation $\tau_{i,h}$ to denote the $h$-th trajectory collected using policy $\vtheta^{s+1}_i$ where $s$ will be clear from the context.
+We use the notation $\tau_{i,h}$ to denote the $h$-th trajectory collected using policy $\vtheta^{s+1}_i$ where $s$ is clear from the context.
 
 \begin{definition}
 	For a random variable $X$:
@@ -113,7 +137,8 @@ We introduce the notation $\tau_{i,h}$ to denote the $h$-th trajectory collected
 	
 \end{definition}
 
-Intuitively, the $\Ets{\cdot}$ operator computes the expected value with respect to the sampling of trajectories from the snapshot $\wt{\vtheta}^s$ up to the $t$-th iteration included. Note that the order in which expected values are taken is important since each $\vtheta_{t}^{s+1}$ is function of previously sampled trajectories and is used to sample new ones.
+Intuitively, the $\Ets{\cdot}$ operator computes the expected value with respect to the sampling of trajectories from the snapshot policy $\wt{\vtheta}^s$ up to the $t$-th iteration included. Note that the order in which expected values are taken is important since each $\vtheta_{t}^{s+1}$ is function of previously sampled trajectories and is used to sample new ones.
+We want to point up that this is exactly the non-stationarity of the \acs{RL} problems: the trajectories sampled in a point have influence in all the point distributions of the future.
 
 \begin{definition}\label{def:var}
 	For random vectors X, Y:
@@ -121,7 +146,7 @@ Intuitively, the $\Ets{\cdot}$ operator computes the expected value with respect
 	\Covs{X}{Y} &\coloneqq \Tr\left(\Ets{(X-\Ets{X})(Y-\Ets{Y})^T}\right), \\
 	\Vars{X} &\coloneqq \Covs{X}{Y},
 	\end{align*}
-	where $\Tr(\cdot)$ denotes the trace of a matrix. From the linearity of expected value we have the following:
+	where $\Tr(\cdot)$ denotes the trace of a matrix. We have to define this because this is only one of all the possible definitions of vector variance. From the linearity of expected value we have the following:
 	\begin{equation}\label{neweq:1}
 	\Vars{X} = \Es{\norm[]{X-\Es{X}}^2}
 	\end{equation}
@@ -133,7 +158,7 @@ Intuitively, the $\Ets{\cdot}$ operator computes the expected value with respect
 	\[
 	e_s \coloneqq \gradApp{\wt{\vtheta}^s}{N} - \gradJ{\wt{\vtheta}^s} 
 	\]
-	and represent the difference between our estimate of gradient (\eg full gradient) and the real gradient.
+	and represent the difference between our estimate of gradient and the real gradient.
 \end{definition}
 
 \begin{definition}\label{def:ideal}
@@ -147,8 +172,8 @@ Intuitively, the $\Ets{\cdot}$ operator computes the expected value with respect
 	- \omega(\tau_i|\vtheta^{s+1}_t, \wt{\vtheta}^s) g(\tau_i|\wt{\vtheta}^s)
 	\\
 	&= \gradBlack{\vtheta_t^{s+1}} - \gradApp{\wt{\vtheta}^s}{N} + \gradJ{\wt{\vtheta}^s} \\
-	&= \gradBlack{\vtheta_t^{s+1}} - e_s
-	\end{align*}
+	&= \gradBlack{\vtheta_t^{s+1}} - e_s,
+	\end{align*} and is the SVRPG gradient that we would use if the true value of the gradient was available.
 \end{definition}
 
 
@@ -182,7 +207,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	\]
 \end{lemma}
 \begin{proof}
-	For both REINFORCE and G(PO)MDP, $g(\tau\vert\vtheta)$ is a linear combination of terms of the kind $\nabla \log \pi_{\vtheta}(a_t\vert s_t)\gamma^t r_t$ \citep{peters2008reinforcement}. These terms have bounded gradient from the second inequality of Assumption \ref{ass:bounded_score} and the fact that $|r_t|\leq R$. If a baseline is used in REINFORCE or G(PO)MDP, we only need the additional assumption that said baseline is bounded, but baseline  is arbitrary and for all value  does not compromise the correctness of gradient estimator, so we can assume it bounded.
+	For both REINFORCE and G(PO)MDP, $g(\tau\vert\vtheta)$ is a linear combination of terms of the kind $\nabla \log \pi_{\vtheta}(a_t\vert s_t)\gamma^t r_t$ \citep{peters2008reinforcement}. These terms have bounded gradient from the second inequality of Assumption \ref{ass:bounded_score} and the fact that $|r_t|\leq R$. If a baseline is used in REINFORCE or G(PO)MDP, we only need the additional assumption that said baseline is bounded, which can always be assumed without compromising the correctness of the gradient estimatorm, since the choice of baseline is arbitrary.
 	Bounded gradient implies Lipschitz continuity. Finally, the linear combination of Lipschitz continuous functions is Lipschitz continuous.
 \end{proof}
 
@@ -214,7 +239,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 \begin{proof}
 	By using basic properties of expected value and scalar variance:
 	\begin{align*}
-	\Vars{X} = \Es{\norm[]{X-\Es{X}}^2} &= \Es{\sum_{i=1}^{\dim(X)}\left(X_i-\Es{X_i}\right)^2}\\
+	\Vars{X} &= \Es{\norm[]{X-\Es{X}}^2} = \Es{\sum_{i=1}^{\dim(X)}\left(X_i-\Es{X_i}\right)^2}\\
 	& = \sum_{i=1}^{\dim(X)}\Es{\left(X_i-\Es{X_i}\right)^2} \\
 	&\leq \sum_{i=1}^{\dim(X)}\Es{X_i^2} = \Es{\sum_{i=1}^{\dim(X)}X_i^2} = \Es{\norm[]{X}^2}.
 	\end{align*}
@@ -546,7 +571,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 
 We finally provide the proof of the convergence theorem:
 
-\begin{theorem}\label{theo:convergence}
+\begin{theorem}\label{theo:convergence2}
 	Assume the REINFORCE or the G(PO)MDP gradient estimator is used in SVRPG:
 	\begin{align}
 	\blacktriangledown J(\vtheta_{t}) &:= v_t= \wh{\nabla}_N J(\wt{\vtheta})\\ \notag
@@ -554,8 +579,8 @@ We finally provide the proof of the convergence theorem:
 		\frac{1}{B} \sum_{i=0}^{B-1} \left[
 		g(\tau_i|\vtheta_t) - \omega(\tau_i|\vtheta_t, \wt{\vtheta}) g(\tau_i|\wt{\vtheta})
 		\right].
-	\end{align}.
-	Under Assumptions~\ref{ass:bounded_score}, \ref{ass:REINFORCE} and \ref{ass:M2}, the parameter vector $\vtheta_A$ returned by Algorithm~\ref{alg:svrpg} after $T=m\times S$ iterations has, for some positive constants $\psi,\zeta, \xi$ and for proper choice of the step size $\alpha$ and the epoch size $m$, the following property:
+	\end{align}
+	then, under Assumptions~\ref{ass:bounded_score}, \ref{ass:REINFORCE} and \ref{ass:M2}, the parameter vector $\vtheta_A$ returned by Algorithm~\ref{alg:svrpg} after $T=m\times S$ iterations has, for some positive constants $\psi,\zeta, \xi$ and for proper choice of the step size $\alpha$ and the epoch size $m$, the following property:
 	\begin{align*}
 	&\EVV[]
 	{\norm[2]{\nabla J(\vtheta_A)}^2} 
@@ -610,7 +635,7 @@ We finally provide the proof of the convergence theorem:
 	\end{align*}
  \end{proof}
 
-\section{Consequence}\label{sec:consequence}
+\section{Consequences}\label{sec:consequence}
 
 By analysing the upper-bound in Theorem~\ref{theo:convergence}:
 	\begin{align*}
