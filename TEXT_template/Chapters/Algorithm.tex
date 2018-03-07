@@ -1,7 +1,7 @@
 \chapter{Stochastic Variance Reduced Policy Gradient} \label{chap:algorithm}
 \vspace{-0.05in}
-In online \acs{RL} problems, the usual approach is to tune the batch size of \acs{SG} to find the optimal trade-off between variance and speed.
-Recall that, compared to \acs{SL}, the samples are not fixed in advance but we need to collect them at each policy change.
+In online \acs{RL} problems, the usual approach is to manually tune the batch size of \acs{SG} to find the optimal trade-off between variance and speed.
+Recall that, compared to \acs{SL}, the samples are not fixed in advance but we need to collect them at each policy update.
 Since this operation may be costly, we would like to minimize the number of interactions with the environment.
 For these reasons, we would like to apply \acs{SVRG} to \acs{RL} problems in order to limit the variance introduced by sampling trajectories, which would ultimately lead to faster convergence.
 However, as previously introduced, a direct application of \acs{SVRG} to \acs{RL} is not possible due to the following issues:
@@ -9,9 +9,9 @@ However, as previously introduced, a direct application of \acs{SVRG} to \acs{RL
 % We would like to apply SVRG to the policy gradient framework in order to limit the variance introduced by sampling trajectories, which would ultimately lead to faster convergence. In this scenario, the function $f(\vtheta)$ to optimize is $J(\vtheta)$ and the (implicit) dataset $\mathcal{D}$ is the set of all possible trajectories $\mathcal{T}$. Compared to the typical finite sum optimization scenario, we have the following additional challenges:
 \begin{description}
 	\item[\textbf{\MakeUppercase{N}on-concavity}:] the objective function $J(\vtheta)$ is typically non-concave.
-	\item[\textbf{\MakeUppercase{I}nfinite dataset}:] the \acs{RL} optimization cannot be expressed as a finite-sum problem. The objective function is an expected value over the trajectory density $p_{\vtheta}(\tau)$ of the total discounted reward, for which we would need an infinite dataset.
+	\item[\textbf{\MakeUppercase{I}nfinite dataset}:] in continuous \acs{RL} tasks the \acs{RL} optimization cannot be expressed as a finite-sum problem. The objective function is an expected value over the trajectory density $p_{\vtheta}(\tau)$ of the total discounted reward, for which we would need an infinite dataset. Whereas in discrete \acs{RL} tasks, even though we can express the optimization problem as a finite-sum we can't handle it anyway because, due to combinatorial reasons, the number of addends appearing in the sum itself becomes easily intractable.
 	%    \item[Approximation:] the dataset $\mathcal{T}$ can be infinite, but we can only sample a finite number of trajectories;
-	\item[\textbf{\MakeUppercase{N}on-stationarity}:] the distribution of the samples changes over time. In particular, the value of the policy parameter $\vtheta$ influences the sampling process.
+	\item[\textbf{\MakeUppercase{N}on-stationarity}:] the distribution of the samples changes over time. In particular, the value of the policy parameter $\vtheta$ influences the sampling process. More precisely, we need to resample after any update of the policy itself, which implies using different distributions to colect samples between different updates of the policy.
 \end{description}
 To deal with non-concavity, we require $J(\vtheta)$ to be $L$-smooth, which is a reasonable assumption for common policy classes such as Gaussian\footnote{See Section \ref{sec:gaussianassumption} in \hyperref[chap:convergence]{Chapter 4} for more details on the Gaussian policy case.} and softmax~\citep[\eg][]{Furmston2012unifying,pirotta2015lipschitz}.
 Because of the infinite dataset, we can only rely on an estimate of the full gradient.
@@ -57,7 +57,7 @@ To overcome the latter issue we employ importance weighting~\citep[\eg][]{rubins
 	\end{algorithmic}
 \end{algorithm} 
 
-We can now introduce \acs{SVRPG} for a generic policy gradient estimator $g$. Pseudo-code is provided in Algorithm \ref{alg:svrpg}.
+We can now introduce \acs{SVRPG} for a generic policy gradient estimator $g$ (\eg REINFORCE or G(PO)MDP). Pseudo-code is provided in Algorithm \ref{alg:svrpg}.
 The overall structure is the same as Algorithm \ref{alg:svrg}, 
 but the snapshot gradient is not exact and the gradient estimate used between snapshots is corrected using importance weighting:\footnote{Note that $g$ can be any unbiased estimator, with or without baseline. The unbiasedness is required for theoretical results.}
 \begin{align*}
@@ -75,9 +75,12 @@ Our update is still fundamentally on-policy since the weighting concerns only th
 	g(\tau_i|\vtheta_t) - \omega(\tau_i|\vtheta_t, \wt{\vtheta}) g(\tau_i|\wt{\vtheta})
 	\right]}_{c_t}.
 \end{align}
-This gradient estimator is computed in Algorithm \ref{alg:svrpg} using the lines 5, 7, 8 and 9.\newline
-It is worth noting that the full gradient and the correction term have the same expected value: $\EVV[\tau_i \sim p(\cdot|\vtheta_t)]{\frac{1}{B} \sum_{i=0}^{B-1} \omega(\tau_i|\vtheta_t, \wt{\vtheta}) g(\tau_i|\wt{\vtheta})} = \nabla J(\wt{\vtheta})$.\footnote{The reader can refer to \hyperref[chap:art]{Chapter 2} for off-policy gradients and variants of REINFORCE and G(PO)MDP.}
-This property will be used to prove Lemma~\ref{L:svrpg.properties}.
+This gradient estimator is computed in Algorithm \ref{alg:svrpg} at lines 5, 7, 8 and 9.\newline
+It is worth noting that the full gradient and the correction term have the same expected value:
+\[
+\ \EVV[\tau_i \sim p(\cdot|\vtheta_t)]{\frac{1}{B} \sum_{i=0}^{B-1} \omega(\tau_i|\vtheta_t, \wt{\vtheta}) g(\tau_i|\wt{\vtheta})} = \nabla J(\wt{\vtheta}).
+\]
+This property will be used to prove Lemma~\ref{L:svrpg.properties}. The reader can refer to \hyperref[chap:art]{Chapter 2} for off-policy gradients and variants of REINFORCE and G(PO)MDP.
 %\begin{align*}
 %&\blacktriangledown J(\vtheta) = \frac{1}{N}\sum_{j=0}^{N-1}\nabla\log\pi(\tau_j \vert \wt{\vtheta})\Reward(\tau_j) +\\
 %&\quad\frac{1}{B}\left[\sum_{i=0}^{B-1}
@@ -93,12 +96,12 @@ The use of mini-batches is also common practice in \acs{SVRG} since it can yield
 	\mathop{\mathbb{E}}
 	\left[\blacktriangledown J(\vtheta)\right] = \gradJ{\vtheta}.
 	\end{equation}
-	and regardless of the mini-batch size $B$:\footnote{
-		For any vector $\mathbf{x}$, we use $\Var[\mathbf{x}]$ to denote the trace of the covariance matrix, \ie $\Tr\EVV[]{(\mathbf{x}-\EVV[]{\mathbf{x}})(\mathbf{x}-\EVV[]{\mathbf{x}})^T}$.}
+	and regardless of the mini-batch size $B$:
 	\begin{equation}\label{eq:zerovar}
 	\Var\left[\gradBlack{\vtheta^*}\right] = 
 	\Var\left[\wh{\nabla}_N J(\vtheta^*)\right].
 	\end{equation}
+	For any vector $\mathbf{x}$, we use $\Var[\mathbf{x}]$ to denote the trace of the covariance matrix, \ie $\Tr\EVV[]{(\mathbf{x}-\EVV[]{\mathbf{x}})(\mathbf{x}-\EVV[]{\mathbf{x}})^T}$.
 \end{lemma}
 %\begin{proof}
 %Claim (\ref{eq:unbiased}) is from the unbiasedness of the estimators:
