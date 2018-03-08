@@ -42,7 +42,7 @@ However, in \acs{RL} we can consider the following assumption which is sufficien
 	\]
 \end{assumption}
 
-\textit{2) FG Approximation.}
+\textit{2) \acs{FG} Approximation.}
 Since we cannot compute an exact full gradient due to the infinite dataset, we require the variance of the gradient estimator to be bounded.
 This assumption is similar in spirit to the one in ~\cite{harikandeh2015stopwasting}.
 \begin{assumption}\label{ass:REINFORCE}
@@ -646,7 +646,13 @@ By analysing the upper-bound in Theorem~\ref{theo:convergence}:
 \frac{\zeta}{N}
 +\frac{\xi}{B},
 \end{align*}
- we observe that: I) the $\mathcal{O}(\nicefrac{1}{T})$ term is coherent with results on non-concave SVRG~\citep[\eg][]{reddi2016stochastic}; T is the number of iterations. We would like to highlight up to now (e.g. in \acs{SG}) the convergence rate was $\mathcal{O}(\nicefrac{1}{T^2})$ so this result is of great impact in theoretical \acs{RL}. II) the $\mathcal{O}(\nicefrac{1}{N})$ term is due to the FG approximation and is analogous to the one in~\citep{harikandeh2015stopwasting}; This term can be annulled with the increasing of $N$ III) the $\mathcal{O}(\nicefrac{1}{B})$ term is due to the variance of importance weighting. The variance of importance weighting can go against our prime aim that is the variance reduction.  This term can be annulled with the increasing of $B$.
-To achieve asymptotic convergence, the batch size $N$ and the mini-batch size $B$ should increase over time. 
-In practice, it is enough to choose $N$ and $B$ large enough to make the second and the third term negligible, \ie to mitigate the variance introduced by FG approximation and importance sampling, respectively.
-Once the last two terms can be neglected, the number of trajectories needed to achieve $\norm[2]{\gradJ{\vtheta}}^2\leq\epsilon$ is $O(\frac{B+\nicefrac{N}{m}}{\epsilon})$. In this sense, an advantage over batch gradient ascent can be achieved with properly selected meta-parameters. 
+ we observe that:
+ \begin{enumerate}
+ 	\item  the $\mathcal{O}(\nicefrac{1}{T})$ term is coherent with results on non-concave SVRG~\citep[\eg][]{reddi2016stochastic}; T is the number of iterations.
+ 	\item the $\mathcal{O}(\nicefrac{1}{N})$ term is due to the \acs{FG} approximation and is analogous to the one in~\citep{harikandeh2015stopwasting}; This term can be made vanish by increasing of $N$
+ 	\item the $\mathcal{O}(\nicefrac{1}{B})$ term is due to the variance of importance weighting. The variance of importance weighting can counteract our main objective, which is variance reduction.
+ \end{enumerate}
+To achieve asymptotic convergence, the batch size $N$ and the mini-batch size $B$ should increase over time.
+ We would like to highlight that our algorithm have sense if  $B << N$.\newline
+In practice, it is enough to choose $N$ and $B$ large enough to make the second and the third term negligible, \ie to mitigate the variance introduced by \acs{FG} approximation and importance sampling, respectively.
+Once the last two terms can be neglected, the number of trajectories needed to achieve $\norm[2]{\gradJ{\vtheta}}^2\leq\epsilon$ is $O(\frac{B+\nicefrac{N}{m}}{\epsilon})$ compared to $O(\frac{N}{\epsilon^2})$ for \acs{SG}. In this sense, an advantage over batch gradient ascent can be achieved with properly selected meta-parameters. 
