@@ -8,7 +8,18 @@ However, as previously introduced, a direct application of \acs{SVRG} to \acs{RL
 % In on-line policy gradient problems, SG is not really a choice, but is dictated by the necessity of interacting with an unknown environment.\todopir{I do not understand the meaning of this sentence. I would say that SG is not a choice by referring to papers that use batches}
 % We would like to apply SVRG to the policy gradient framework in order to limit the variance introduced by sampling trajectories, which would ultimately lead to faster convergence. In this scenario, the function $f(\vtheta)$ to optimize is $J(\vtheta)$ and the (implicit) dataset $\mathcal{D}$ is the set of all possible trajectories $\mathcal{T}$. Compared to the typical finite sum optimization scenario, we have the following additional challenges:
 \begin{description}
-	\item[\textbf{\MakeUppercase{N}on-concavity}:] the objective function $J(\vtheta)$ is typically non-concave.
+	\item[\textbf{\MakeUppercase{N}on-concavity}:] the objective function $J(\vtheta)$ is typically non-concave for instance, in swimmer, a snake-like robot immersed in a fluid which must move forward we have: a 13-dimensional state space, 3 links velocities ($v_x$ and $v_y$ of center of masses) and 2 actuated joints angles. 2-dimensional action space which are the two momentums applied on the actuated joints. Therefore, the objective function will be:
+	\[
+	\ \int p_{\theta}(\tau)\mathcal{R}(\tau)d\tau
+	\]
+	with 
+	\[
+	\ \mathcal{R}(\tau) = \sum_{t=0}^{\infty}\gamma^t\mathcal{R}(s_t,a_t)
+	\]
+	and 
+	\[
+	\ \mathcal{R}(s_t,a_t)=v^t_x - 10^{-4}\norm[2]{a_t}^2
+	\]
 	\item[\textbf{\MakeUppercase{I}nfinite dataset}:] in continuous \acs{RL} tasks the \acs{RL} optimization cannot be expressed as a finite-sum problem. The objective function is an expected value over the trajectory density $p_{\vtheta}(\tau)$ of the total discounted reward, for which we would need an infinite dataset. Whereas in discrete \acs{RL} tasks, even though we can express the optimization problem as a finite-sum we can't handle it anyway because, due to combinatorial reasons, the number of addends appearing in the sum itself becomes easily intractable.
 	%    \item[Approximation:] the dataset $\mathcal{T}$ can be infinite, but we can only sample a finite number of trajectories;
 	\item[\textbf{\MakeUppercase{N}on-stationarity}:] the distribution of the samples changes over time. In particular, the value of the policy parameter $\vtheta$ influences the sampling process. More precisely, we need to resample after any update of the policy itself, which implies using different distributions to colect samples between different updates of the policy.
