@@ -111,8 +111,8 @@ Given an bounded action space $\mathcal{A}\subset\mathbb{R}^n$ such that each di
 we show that:
 
 \begin{align*}
-&\nabla_{\Theta_i}\log\pi_{\Theta}(\tau) =  \phi_i(s)(a-\Theta\phi(s))\Sigma^{-1},\\
-&\frac{\partial^2}{\partial\Theta_i\partial\Theta_j}\log\pi_{\Theta}(\tau) = \phi_i(s)\phi_j(s)\Sigma^{-1}.
+&\nabla_{\Theta_{i,k}}\log\pi_{\Theta}(\tau) =  \phi_{i,k}(s)(a-\Theta\phi(s))\Sigma^{-1},\\
+&\frac{\partial^2}{\partial\Theta_{i,k}\partial\Theta_{j,z}}\log\pi_{\Theta}(\tau) = \phi_{i,k}(s)\phi_{j,z}(s)\Sigma^{-1}.
 \end{align*}
 
 by taking $\GRADLOG = nM_{\phi}|\Aspace|\Sigma^{-1}$ and $\HESSLOG = M_{\phi}^2\Sigma^{-1}$ the assumption is satisfied.
@@ -141,7 +141,7 @@ We use the notation $\tau_{i,h}$ to denote the $h$-th trajectory collected using
 \begin{definition}
 	For a random variable $X$:
 	\begin{align*}
-	\mathbb{E}_{t\vert s}\left[X\right] &\coloneqq 
+	&\mathbb{E}_{t\vert s}\left[X\right] \coloneqq 
 	\mathop{\mathbb{E}}_{\substack{\tau_j\sim\pi(\cdot\vert\wt{\vtheta}^s)\forall j \in N \\ \tau_{i,h}\sim\pi(\cdot\vert\vtheta^{s+1}_i) \forall h \in B, \text{ for $i=0,\dots,t$}}}{\left[X \vert \wt{\vtheta^s}\right]} \\
 	&\coloneqq \EVV[\tau_j\sim\pi(\cdot\vert\wt{\vtheta}^s)\forall j \in N]{
 		\EVV[\tau_{0,h}\sim\pi(\cdot\vert\vtheta_0^{s+1}) \forall h \in B]
@@ -282,10 +282,10 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	For ease of notation denote $\omega(\tau_i) := \omega(\tau_i|\vtheta^{s+1}_t, \wt{\vtheta}^{s})$. Then,
 	\begingroup
 	\allowdisplaybreaks
+	\newgeometry{left=1cm,layouthoffset=-0.5cm,right=3cm,bottom=2cm,head=2cm}
 	\begin{align}
 	%            \Ets{\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2}
-	&\mathbb{E}_{t|s}\big[\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2\big] \\
-	&= \Ets{\norm[]{\gradApp{\wt{\vtheta}^s}{N}
+	&\mathbb{E}_{t|s}\big[\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2\big] = \Ets{\norm[]{\gradApp{\wt{\vtheta}^s}{N}
 			+\frac{1}{B}\sum_{i=0}^{B-1} g(\tau_i\vert\vtheta_t^{s+1})
 			-\frac{1}{B}\sum_{i=0}^{B-1}
 			\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)}^2} \nonumber\\
@@ -294,8 +294,8 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	+\frac{1}{B}\sum_{i=0}^{B-1}\left( 
 	g(\tau_i\vert\vtheta_t^{s+1}) -
 	\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)
-	 \right.\right.\nonumber
-	\\&\qquad\left.\left.
+	%\right.\right.\nonumber
+	%\\&\qquad\left.\left.
 	\pm \gradJ{\vtheta_t^{s+1}} \pm \gradJ{\wt{\vtheta}^s} 
 	% -\gradJ{\vtheta_t^{s+1}} + \gradJ{\wt{\vtheta}^s}
 	% +\gradJ{\vtheta_t^{s+1}} - \gradJ{\wt{\vtheta}^s}
@@ -308,7 +308,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	\frac{1}{B}\sum_{i=0}^{B-1}\left(
 	g(\tau_i\vert\vtheta_t^{s+1}) -
 	\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)
-		\right.\right.\nonumber\\&\qquad\left.\left.
+	%	\right.\right.\nonumber\\&\qquad\left.\left.
 	- \Ets{
 		\frac{1}{B}\sum_{i=0}^{B-1}\left(
 		g(\tau_i\vert\vtheta_t^{s+1}) -
@@ -396,10 +396,11 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	%
 	&\leq \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} 
 	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)}
-	\nonumber\\ &\qquad
+%	\nonumber\\ &\qquad
 	+\frac{L_g^2}{B}\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}
 	+\frac{\Gamma\VARIS}{B}, \label{eq:5}
 	\end{align}
+	\restoregeometry
 	\endgroup
 	where (\ref{neweq:2}) is from (\ref{neweq:1}), (\ref{eq:1}) is from the definition of $\gradApp{\vtheta}{N}$, (\ref{eq:2}) is from Lemma \ref{lemma:varineq}, (\ref{eq:3}) is from Lemma \ref{lemma:gsmooth}, 
 	(\ref{eq:4}) is from Lemma \ref{lemma:gbound}, and (\ref{eq:5}) is from Assumption \ref{ass:M2}.
