@@ -150,7 +150,7 @@ Where not specified, meta-parameters are shared among G(PO)MDP and SVRPG.
 Refer to \cite{duan2016benchmarking} for more details about G(PO)MDP (REINFORCE in the paper) on the Half Cheetah task.\newpage
 
 
-Now we can properly anddress the results of our work. Figure \ref{fig:cartpole} compares \acs{SVRPG} with G(PO)MDP on a continuous variant of the classical Cart-pole task, which is a 2D balancing task. Despite using more trajectories on average for each parameter update, our algorithm shows faster convergence, which can be ascribed to the better quality of updates due to variance reduction.
+Now we can properly anddress the main results of our work. Figure \ref{fig:cartpole} compares \acs{SVRPG} with G(PO)MDP on a continuous variant of the classical Cart-pole task, which is a 2D balancing task. Despite using more trajectories on average for each parameter update, our algorithm shows faster convergence, which can be ascribed to the better quality of updates due to variance reduction.
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
@@ -224,8 +224,19 @@ In Cart-pole, disjoint confidence intervals show that the advantage is statistic
 	\vspace{-0.05in}
 \end{table*}
 
-\textbf{Preliminary results on actor-critic.} %As mentioned, 
-Another variance-reduction technique in policy gradient consists of using baselines or \textit{critics}. This tool is orthogonal to the methods described in this paper, and the theoretical results of Section \ref{sec:conv} are general in this sense. In the experiments described so far, we compared against the so-called \textit{actor-only} G(PO)MDP, \ie without the baseline. To move towards a more general understanding of the variance issue in policy gradient, we also test \acs{SVRPG} in an \textit{actor-critic} scenario. To do so, we consider the more challenging MuJoCo~\citep{todorov2012mujoco} Half-cheetah task, a 3D locomotion task that has a larger state-action space than Swimmer. Table \ref{tab:1} also reports the comparison between \acs{SVRPG} and G(PO)MDP\footnote{\citet{duan2016benchmarking} report results on REINFORCE. However, inspection on \textit{rllab} code and documentation reveals that it is actually \ac{PGT} \cite{sutton2000policy}, which is equivalent to G(PO)MDP \citep[shown by][]{peters2008reinforcement}. Using the name REINFORCE in a general way is inaccurate, but widespread.} on Half-cheetah using the critic suggested in \cite{duan2016benchmarking} for both algorithms. Results are promising, showing that a combination of the baseline usage and \acs{SVRG}-like variance reduction can yield an improvement that the two techniques alone are not able to achieve.
+\subsection{Preliminary Results on Actor-Critic.}\label{subsec:actorcritic} %As mentioned, 
+Another variance-reduction technique in policy gradient consists of using baselines or \textit{critics}. This tool is orthogonal to the methods described in this paper, and the theoretical results of \hyperref[chap:convergence]{Chapter 4} are general in this sense. In the experiments described so far, we compared against the so-called \textit{actor-only} G(PO)MDP, \ie without the baseline. To move towards a more general understanding of the variance issue in policy gradient, we also test \acs{SVRPG} in an \textit{actor-critic} scenario. To do so, we consider the more challenging MuJoCo~\citep{todorov2012mujoco} Half-cheetah task, a 3D locomotion task that has a larger state-action space than Swimmer. Table \ref{tab:1} also reports the comparison between \acs{SVRPG} and G(PO)MDP\footnote{\citet{duan2016benchmarking} report results on REINFORCE. However, inspection on \textit{rllab} code and documentation reveals that it is actually \ac{PGT} \cite{sutton2000policy}, which is equivalent to G(PO)MDP \citep[shown by][]{peters2008reinforcement}. Using the name REINFORCE in a general way is inaccurate, but widespread.} on Half-cheetah using the critic suggested in \cite{duan2016benchmarking} for both algorithms. More precisely, this critic is a linear state-value function estimator. 
+The (time-varying) feature encoding for the linear baseline is:
+\begin{align*}
+\vphi(s,t)=[s, s \odot s, 0.01t, (0.01t)^2, (0.01t)^3,1],
+\end{align*}
+where $s\in\mathbb{R}^d$ is the state vector and $\odot$ is the element-wise product. The baseline is then:
+\[
+b(s_t,a_t) = \boldsymbol{\lambda}^T\vphi(s_t,t).
+\]
+The baseline is fitted from scratch at each policy gradient iteration, with least squares, to match state-value function $V^{\pi}(s)$.
+When used with SVRPG, the critic parameter $\boldsymbol{\lambda}$ is updated only at the snapshot. Table \ref{tab:1} shows promising results, meaning that a combination of the baseline usage and \acs{SVRG}-like variance reduction can yield an improvement that the two techniques alone are not able to achieve.
+\subsection{Exploratory Results on Other Gradient Estimators}
 
 
 \vspace{-0.05in}
