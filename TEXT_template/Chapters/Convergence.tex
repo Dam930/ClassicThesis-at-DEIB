@@ -64,7 +64,7 @@ Differently from Assumptions~\ref{ass:bounded_score} and ~\ref{ass:REINFORCE}, A
 Given this assumptions, as shown in the next sections, we can handle the challenges and prove convergence guaranties of \acs{SVRPG}. Before that we need to give some definition and some lemma for a better  understanding of the final proof.
 
 \section{Validity of assumptions for gaussian policies}\label{sec:gaussianassumption}
-We can now provide more details on the applicability of convergence guarantees on the case of Gaussian policies. Gaussian policies are the most commonly policies in continuous RL applications, an example can be founded in \cite{kober2013reinforcement}. Gaussian policies are also used in our experiments, reported in Chapter \ref{chap:exp}. We start by analyzing the case of one-dimensional bounded action space $\mathcal{A}\subset\mathbb{R}$, linear mean $\mu(s) = \vtheta^T\vphi(s)$ and fixed standard deviation $\sigma$, which corresponds to the following probability density function::
+We can now provide more details on the applicability of convergence guarantees on the case of Gaussian policies. Gaussian policies are the most commonly policies in continuous RL applications, an example can be founded in \cite{kober2013reinforcement}. Gaussian policies are also used in our experiments, reported in Chapter \ref{chap:experiments}. We start by analyzing the case of one-dimensional bounded action space $\mathcal{A}\subset\mathbb{R}$, linear mean $\mu(s) = \vtheta^T\vphi(s)$ and fixed standard deviation $\sigma$, which corresponds to the following probability density function::
 \[
 \pi_{\vtheta}(a\vert s) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left\{
 -\frac{(\vtheta^T\vphi(s) - a)^2}{2\sigma^2}\right\},
