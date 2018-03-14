@@ -1,0 +1,168 @@
+\chapter{Experiments} \label{chap:experiments}
+\vspace{-0.05in}
+The convergence guarantees presented in the previous chapter comes with requirements on the meta-parameters (\ie $\alpha$ and $m$) that may be too conservative for practical applications.
+Here we provide a practical and automatic way to choose the step size $\alpha$ and the number of sub-iterations $m$ performed between snapshots.
+Additionally, we provide a variant of \acs{SVRPG} exploiting a variance-reduction technique for importance weights.
+Despite lacking theoretical guarantees, in this chapter, we will show that this method can outperform the baseline \acs{SVRPG} (Algorithm~\ref{alg:svrpg}).
+
+\vspace{-0.05in}
+\section{Full Gradient Update}
+\vspace{-0.05in}
+As noted in \hyperref[chap:algorithm]{Chapter 3}, the update performed at the beginning of each epoch is equivalent to a full-gradient update. In our setting, where collecting samples is particularly expensive, the $B$ trajectories collected using the snapshot trajectory $\pi_{\wt{\vtheta}^s}$ feels like a waste of data (the term $\sum_i g(\tau_i) - \omega(\tau_i) g(\tau_i) =0$ since $\vtheta_0 = \wt{\vtheta}$).
+In practice, we just perform an approximate full gradient update using the $N$ trajectories sampled to compute $\gradApp{\wt{\vtheta}^s}{N}$, \ie
+\begin{align*}
+&\vtheta_{1}^{s+1} = \wt{\vtheta}^s + \alpha\gradApp{\wt{\vtheta}^s}{N} \\
+&\vtheta_{t+1}^{s+1} = \vtheta_t^{s+1} + \alpha 
+%        v_t^{s+1}
+\blacktriangledown J(\vtheta^{s+1}_t)
+\text{ for $t=1,\dots,m-1$}.
+\end{align*}
+In the following, we will always use this practical variant.
+
+\vspace{-0.05in}
+\section{Meta-Parameter Selection}\label{sec:stopping}
+\vspace{-0.05in}
+% In section \ref{sec:conv}, we introduced the practical need to properly choose $\alpha$ and $m$, which are, respectively, the step size and the number of sub-iterations to perform after a snapshot.
+% At this point, the open question is how to properly select the step size $\alpha$ and the sub-iteration number $m$ in practical applications.
+The step size $\alpha$ is crucial to balance variance reduction and efficiency, while
+% The first parameter is crucial to balance the variance introduced by estimations within sub-iterations with respect to the variance introduced by estimations associated to the snapshots.
+the epoch length $m$ influences the variance introduced by the importance weights. Low values of $m$ are associated with small variance but increase the frequency of snapshot points (which means many \acs{FG} computations). High values of $m$ may move policy $\pi_{\vtheta_t}$ far away from the snapshot policy $\pi_{\wt{\vtheta}}$, causing large variance in the importance weights. We will jointly set the two meta-parameters.
+% the farther the distance between the snapshot policy and the current one, the higher the variance of the importance weights.
+
+\textbf{Adaptive step size.}
+A standard way to deal with noisy gradients is to use adaptive strategies to compute the step size.
+ \ac{ADAM}~\citep{kingma2014adam} stabilizes the parameter update by computing learning rates for each parameter based on an incremental estimate of the gradient variance.
+Due to this feature, we would like to incorporate \acs{ADAM} in the structure of the \acs{SVRPG} update.
+Recall that \acs{SVRPG} performs two different updates of the parameters $\vtheta$: I) \acs{FG} update in the snapshot; II) corrected gradient update in the sub-iterations.
+Given this structure, we suggest using two separate \acs{ADAM} estimators:
+\begin{align*}
+\vtheta^{s+1}_1 &= \wt{\vtheta}^s + \alpha^{\textsc{FG}}_s\left(\wh{\nabla}_N J(\wt{\vtheta}^s) \right)\\
+\vtheta^{s+1}_{t+1} &= \vtheta^{s+1}_t + \alpha^{\textsc{SI}}_{s+1,t}\left( 
+%        v_t^{s+1}
+\blacktriangledown J(\vtheta^{s+1}_t)\right)
+\text{ for $t=1,\dots,m-1$},
+\end{align*}
+where $\alpha^{\textsc{FG}}_{s}$ is associated with the snapshot and $\alpha^{\textsc{SI}}_{s+1,t}$ with the sub-iterations (see Appendix~\ref{app:practicalsvrpg} for details).
+By doing so, we decouple the contribution of the variance due to the approximate \acs{FG} from the one introduced by the sub-iterations.
+Note that these two terms have different orders of magnitude since are estimated with a different number of trajectories ($B \ll N$) and the estimator in the snapshot does not require importance weights.
+The use of two \acs{ADAM} estimators allows to capture and exploit this property.
+
+\textbf{Adaptive epoch length.}
+It is easy to imagine that a predefined schedule (\eg $m$ fixed in advance or changed with a policy-independent process) may poorly perform due to the high variability of the updates.
+In particular, given a fixed number of sub-iterations $m$, the variance of the updates in the sub-iterations depends on the snapshot policy and the sampled trajectories.
+Since the \acs{ADAM} estimate partly captures such variability,  we propose to take a new snapshot (\ie interrupt the sub-iterations) whenever the step size $\alpha^{\textsc{SI}}$ proposed by \acs{ADAM} for the sub-iterations is smaller than the one for the \acs{FG} (\ie $\alpha^{\textsc{FG}}$).
+If the latter condition is verified, it amounts to say that the noise in the corrected gradient has overcome the information of the \acs{FG}.
+Formally, the stopping condition is as follows
+\[
+\textbf{If }        \frac{\alpha^{\textsc{FG}}}{N} > \frac{\alpha^{\textsc{SI}}}{B} \textbf{ then } \text{take snapshot,}
+\]
+where we have introduced $N$ and $B$ to take into account the trajectory efficiency (\ie weighted advantage).
+The less the number of trajectories used to update the policy, the better.
+Including the batch sizes in the stopping condition allows us to optimize the trade-off between the quality of the updates and the cost of performing them.
+% This weighted approach comes from the fact that, as mentioned above, there is no advantage in having $m$ too small.
+% Thus, we aim to facilitate sub-iterations rather than snapshots.
+
+\vspace{-0.05in}
+\section{Normalized Importance Sampling}\label{sec:prac}
+\vspace{-0.05in}
+As mentioned in Section~\ref{sec:stopping}, importance weights are an additional source of variance. A standard way to cope with this issue is self-normalization~\citep[\eg][]{precup2000eligibility,owenmcbook}.
+This technique can reduce the variance of the importance weights at the cost of introducing some bias~\citep[][Chapter 9]{owenmcbook}.
+Whether the trade-off is advantageous depends on the specific task.  
+Introducing self-normalization in the context of our algorithm, we switch from Eq.~\eqref{E:svrpg.estimate.batch} to:
+\begin{align*}
+\blacktriangledown J(\vtheta_{t}) &= \wh{\nabla}_N J(\wt{\vtheta}) + \frac{1}{B} \sum_{i=0}^{B-1} \left[g(\tau_i|\vtheta_t)\right]\\ 
+&\qquad{} - \frac{1}{\Omega} \sum_{i=0}^{B-1} \left[ \omega(\tau_i|\vtheta_t, \wt{\vtheta}) g(\tau_i|\wt{\vtheta})
+\right].
+\end{align*}
+where $\Omega = \sum_{i=0}^{B-1}\omega(\tau_i|\vtheta_t, \wt{\vtheta})$.
+In the next section we show that self-normalization can provide a performance improvement.
+
+\vspace{-0.05in}
+\section{Experimental Results}\label{sec:exp}
+\vspace{-0.05in}
+In this section, we evaluate the performance of \acs{SVRPG} and compare it with policy gradient on well known continuous \acs{RL} tasks: Cart-pole balancing and Swimmer~\citep[\eg][]{duan2016benchmarking}.
+We consider G(PO)MDP since has a smaller variance than REINFORCE.
+% This comparison is performed using G(PO)MDP as an estimator of $\score{\vtheta}{\tau}\Reward(\tau)$ in both cases. 
+For our algorithm, we use a batch size $N=100$, a mini-batch size $B=10$, and the jointly adaptive step size $\alpha$ and epoch length $m$ proposed in Section \ref{sec:stopping}. Since the aim of this comparison is to show the improvement that \acs{SVRG}-flavored variance reduction brings to \acs{SG} in the policy gradient framework, we set the batch size of the baseline policy gradient algorithm to $B$. In this sense, we measure the improvement yielded by computing snapshot gradients and using them to adjust parameter updates. Since we evaluate on-line performance over the number of sampled trajectories, the cost of computing such snapshot gradients is automatically taken into consideration. To make the comparison fair, we also use \acs{ADAM} in the baseline policy gradient algorithm, which we will denote simply as G(PO)MDP in the following.
+In all the experiments we used deep Gaussian policies with adaptive standard deviation (details on network architecture in Appendix \ref{app:exp}).
+Each experiment is run $10$ times with a random policy initialization and seed, but this initialization is shared among the algorithms under comparison.
+The length of the experiment, \ie the total number of trajectories, is fixed for each task. Performance is evaluated by using test-trajectories on a subset of the policies considered during the learning process. We provide average performance with 90\% bootstrap confidence intervals.  
+Task implementations are from the \textit{rllab} library \cite{duan2016benchmarking}, on which our agents are also based.\footnote{rllab can be found at \url{https://github.com/rll/rllab}, while the link to our implementation is not reported for blindness, but it is already publically available.}
+More details on meta-parameters and exhaustive task descriptions are provided in Appendix \ref{app:exp}.\newpage
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/cart_pole_SVRPG_vs_GPOMDP_tex.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of SVRPG vs G(PO)MDP in the Cart-pole task, with 90\% confidence intervals.}
+		\label{fig:cartpole}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+
+Figure \ref{fig:cartpole} compares \acs{SVRPG} with G(PO)MDP on a continuous variant of the classical Cart-pole task, which is a 2D balancing task. Despite using more trajectories on average for each parameter update, our algorithm shows faster convergence, which can be ascribed to the better quality of updates due to variance reduction.
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_self_normalized_SVRPG_vs_SVRPG_tex.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of self-Normalized SVRPG vs unbiased SVRPG in the Swimmer task, with 90\% confidence intervals.}
+		\label{fig:swimmertwo}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+The Swimmer task is a 3D continuous-control locomotion task. This task is more difficult than cart-pole. In particular, the longer horizon and the more complex dynamics can have a dangerous impact on the variance of importance weights. In this case, the self-normalization technique proposed in Section \ref{sec:prac} brings an improvement (even if not statistically significant), as shown in Figure \ref{fig:swimmertwo}. 
+% Although the confidence intervals are never disjoint, the average of the self-normalized version is always higher, which we consider enough to employ the variant in the next comparison. 
+Figure \ref{fig:swimmerone} shows self-normalized \acs{SVRPG} against G(PO)MDP. Our algorithm outperforms G(PO)MDP for almost the entire learning process. Also here, we note an increase of speed in early iterations, and, toward the end of the learning process, the improvement becomes statistically significant.
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_self_normalized_SVRPG_vs_GPOMDP_tex.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of self-Normalized SVRPG vs G(PO)MDP in the Swimmer task, with 90\% confidence intervals}
+		\label{fig:swimmerone}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+
+Table \ref{tab:1} compares G(PO)MDP and \acs{SVRPG} in terms of the average return computed on the whole learning process, which is a common metric for online learning since it is related to an average regret~\citep[\eg][]{duan2016benchmarking}. This metric is related to the area below the curves. Note that the convergence result in Theorem \ref{theo:convergence} is precisely about the average return. We also report normalized standard deviations and 90\% $t$-confidence intervals.
+In both tasks, our algorithm has higher average return and lower normalized standard deviation.
+In Cart-pole, disjoint confidence intervals show that the advantage is statistically significant.
+
+\begin{table*}[h]
+	\caption{
+		\label{tab:1}
+		Comparison between G(PO)MDP and \acs{SVRPG} on different tasks. Average return over the whole learning process is reported, together with normalized standard deviation and 90\% confidence intervals. Results denoted with $\dagger$ are taken from \cite{duan2016benchmarking}.}
+	\centering
+	\begin{tabular}{@{}lccccccc@{}} 
+		\toprule
+		\phantom{abc} & \multicolumn{3}{c}{G(PO)MDP} \\
+		\cmidrule{2-4}
+		\phantom{abc} & Avg Return & Norm. Std & C.I.
+		\\\cmidrule{2-4}
+		Cart-pole & $618.49$ & $21.09$ & $[579.82, 657.16]$\\
+		Swimmer & $39.86$ & $3.84$ & $[32.82, 46.89]$\\
+		Half-cheetah & $1183.1^\dagger$ & $69.20^\dagger$ & $[1035.58, 1330.62]^\dagger$\\
+		\\\cmidrule{2-4}
+		\phantom{abc} & \multicolumn{3}{c}{SVRPG}
+		\\\cmidrule{2-4}
+		\phantom{abc} & Avg Return & Norm. Std & C.I.
+		\\\cmidrule{2-4}
+		Cart-pole & $736.31$ & $16.51$ & $[706.04, 766.57]$\\
+		Swimmer & $49.60$ & $3.27$ & $[43.60, 55.60]$\\
+		Half-Cheetah & $1480.95$ & $73.21$ & $[1324.87, 1637.03]$\\
+		\bottomrule
+	\end{tabular}
+	\vspace{-0.05in}
+\end{table*}
+
+\textbf{Preliminary results on actor-critic.} %As mentioned, 
+Another variance-reduction technique in policy gradient consists of using baselines or \textit{critics}. This tool is orthogonal to the methods described in this paper, and the theoretical results of Section \ref{sec:conv} are general in this sense. In the experiments described so far, we compared against the so-called \textit{actor-only} G(PO)MDP, \ie without the baseline. To move towards a more general understanding of the variance issue in policy gradient, we also test \acs{SVRPG} in an \textit{actor-critic} scenario. To do so, we consider the more challenging MuJoCo~\citep{todorov2012mujoco} Half-cheetah task, a 3D locomotion task that has a larger state-action space than Swimmer. Table \ref{tab:1} also reports the comparison between \acs{SVRPG} and G(PO)MDP\footnote{\citet{duan2016benchmarking} report results on REINFORCE. However, inspection on \textit{rllab} code and documentation reveals that it is actually \ac{PGT} \cite{sutton2000policy}, which is equivalent to G(PO)MDP \citep[shown by][]{peters2008reinforcement}. Using the name REINFORCE in a general way is inaccurate, but widespread.} on Half-cheetah using the critic suggested in \cite{duan2016benchmarking} for both algorithms. Results are promising, showing that a combination of the baseline usage and \acs{SVRG}-like variance reduction can yield an improvement that the two techniques alone are not able to achieve.
+
+
+\vspace{-0.05in}
