@@ -42,10 +42,36 @@ Given this structure, we suggest using two separate \acs{ADAM} estimators:
 \blacktriangledown J(\vtheta^{s+1}_t)\right)
 \text{ for $t=1,\dots,m-1$},
 \end{align*}
-where $\alpha^{\textsc{FG}}_{s}$ is associated with the snapshot and $\alpha^{\textsc{SI}}_{s+1,t}$ with the sub-iterations (see Appendix~\ref{app:practicalsvrpg} for details).
+where $\alpha^{\textsc{FG}}_{s}$ is associated with the snapshot and $\alpha^{\textsc{SI}}_{s+1,t}$ with the sub-iterations.
 By doing so, we decouple the contribution of the variance due to the approximate \acs{FG} from the one introduced by the sub-iterations.
 Note that these two terms have different orders of magnitude since are estimated with a different number of trajectories ($B \ll N$) and the estimator in the snapshot does not require importance weights.
-The use of two \acs{ADAM} estimators allows to capture and exploit this property.
+The use of two \acs{ADAM} estimators allows to capture and exploit this property, so let us give a deeper insight on the two different learning rate schedules used by our algorithm.\newline
+\begin{algorithm}[h]
+	\begin{algorithmic}
+		\STATE \textbf{Input:} A gradient estimate $g_t$ and parameters $\beta_1$, $\beta_2$, $\epsilon$ and $\alpha$.
+		\STATE $\kappa_t = \beta_1 \kappa_{t-1} + (1 - \beta_1) g_t$
+		\STATE $\nu_t = \beta_2 \nu_{t-1} + (1 - \beta_2) g_t \circ g_t$ ($\circ$ is the Hadamard (component-wise) product)
+		\STATE $\hat{\kappa}_t = \dfrac{\kappa_t}{1 - \beta^t_1}$
+		\STATE $\hat{\nu}_t = \dfrac{\nu_t}{1 - \beta^t_2}$
+		\STATE $\Delta(g_t) = \dfrac{\alpha}{\sqrt{\hat{\nu}_t} + \epsilon} \hat{\kappa}_t$
+		\STATE \textbf{Return:} The increment $\Delta(g_t)$  of the parameters.
+	\end{algorithmic}
+	\caption{
+		\label{A:adam}
+		Adam}
+\end{algorithm}
+We report pseudo-code of the original ADAM \citep{kingma2014adam} in Algorithm \ref{A:adam}. As mentioned, we use two distinct instances of ADAM to manage different sources of variance: one related to the snapshots, and one to the sub-iterations. In this way the ADAM associated to the snapshots takes into account only the history of gradient moments at the snapshots. By using Algorithm \ref{A:adam} as a subroutine $\textbf{ADAM}(g,\alpha,\beta)$, we can explicitly define our gradient updates:
+
+\begin{align*}
+\vtheta^{s+1}_1 &= \wt{\vtheta}^s + \textbf{ADAM}\left(\wh{\nabla}_N J(\wt{\vtheta}^s),\beta_1,\beta_2,\alpha\right),\\
+\vtheta^{s+1}_{t+1} &= \textbf{ADAM}\Big( 
+%        v_t^{s+1}
+\blacktriangledown J(\vtheta^{s+1}_t),\beta_1,\beta_2,\frac{\alpha}{2}\Big)
+\text{ for $t=1,\dots,m-1$},
+\end{align*}
+
+where separate histories are kept for estimated first moments $\kappa_{FG},\kappa_{IS}$ and estimated second moments $\nu_{FG},\nu_{IS}$.
+The meta-parameters $\alpha,\beta_1,\beta_2$ are constant and set to default values or with minor manual tuning (see table \ref{table:metaparams}). Note that we double the sub-iterations' learning rate for the snapshot ADAM since we can rely on a larger number of trajectories ($N$ instead of $B$) to control the variance.
 
 \textbf{Adaptive epoch length.}
 It is easy to imagine that a predefined schedule (\eg $m$ fixed in advance or changed with a policy-independent process) may poorly perform due to the high variability of the updates.
@@ -84,11 +110,47 @@ In this section, we evaluate the performance of \acs{SVRPG} and compare it with 
 We consider G(PO)MDP since has a smaller variance than REINFORCE.
 % This comparison is performed using G(PO)MDP as an estimator of $\score{\vtheta}{\tau}\Reward(\tau)$ in both cases. 
 For our algorithm, we use a batch size $N=100$, a mini-batch size $B=10$, and the jointly adaptive step size $\alpha$ and epoch length $m$ proposed in Section \ref{sec:stopping}. Since the aim of this comparison is to show the improvement that \acs{SVRG}-flavored variance reduction brings to \acs{SG} in the policy gradient framework, we set the batch size of the baseline policy gradient algorithm to $B$. In this sense, we measure the improvement yielded by computing snapshot gradients and using them to adjust parameter updates. Since we evaluate on-line performance over the number of sampled trajectories, the cost of computing such snapshot gradients is automatically taken into consideration. To make the comparison fair, we also use \acs{ADAM} in the baseline policy gradient algorithm, which we will denote simply as G(PO)MDP in the following.
-In all the experiments we used deep Gaussian policies with adaptive standard deviation (details on network architecture in Appendix \ref{app:exp}).
+In all the experiments we used deep Gaussian policies with adaptive standard deviation.
 Each experiment is run $10$ times with a random policy initialization and seed, but this initialization is shared among the algorithms under comparison.
 The length of the experiment, \ie the total number of trajectories, is fixed for each task. Performance is evaluated by using test-trajectories on a subset of the policies considered during the learning process. We provide average performance with 90\% bootstrap confidence intervals.  
 Task implementations are from the \textit{rllab} library \cite{duan2016benchmarking}, on which our agents are also based.\footnote{rllab can be found at \url{https://github.com/rll/rllab}, while the link to our implementation is not reported for blindness, but it is already publically available.}
-More details on meta-parameters and exhaustive task descriptions are provided in Appendix \ref{app:exp}.\newpage
+More details on meta-parameters and exhaustive task descriptions are now provided before addressing the actual results of our work:
+\begin{enumerate}
+	\item \emph{Cart-Pole Balancing} : an inverted pendulum mounted on a cart must be kept standing by moving the cart backward or forward ;4-dimensional state space: cart position x, pole angle $\theta$, cart velocity $\dot{x}$ and pole velocity $\dot{\theta}$; 1-dimensional action space: the horizontal force applied to the cart body. Reward function  is defined as $r(s, a) := 10 - (1 - cos(\theta)) - 10^{-5}\norm[] a^2$. The episodes terminate when $|x|>2.4$ or $|\theta|>0.2$ or the number of time steps T is greater than 100.
+	\item \emph{Mujoco Swimmer}: a snake-like robot immersed in a fluid must move forward; 13-dimensional state space: 3 links velocities ($v_x$ and $v_y$ of center of masses) and 2 actuated joints angles. 2-dimensional action space: the two momentums applied on actuated joints.  The reward function is defined as $r(s, a) := v_x - 10^{-4}\norm[2]{a}^2$. The episodes terminate when the number of time steps T is greater than 500.
+	\item \emph{Mujoco Half Cheetah}: a planar biped robot must move forward; 20-dimensional state space: 9 links and 6 actuated joints angles. 6-dimensional action space: the 6 momentums applied on actuated joints.  The reward function is defined as $r(s, a) := v_x - 0.05\norm[2]{a}^2$. The episodes terminate when the number of time steps T is greater than 500.
+\end{enumerate}
+
+All the parameters used in the experiments, including neural network architectures, are reported in the following table:
+
+\begin{table}[H]\caption{Parameters used in the experiments}\label{table:metaparams}
+	\centering
+	\begin{tabular}{| l | c  c  c |}
+		\hline	
+		& Cart-Pole & Swimmer & Half Cheetah \\
+		\hline
+		NN hidden weights & 8 & 32x32 & 100x50x25 \\
+		NN activation & tanh & tanh & tanh \\
+		Adam $\alpha$ (SVRPG) & $5\cdotp10^{-2}$ & $10^{-3}$ & $10^{-3}$ \\
+		Adam $\alpha$ (GPOMDP) & $10^{-2}$ & $10^{-3}$ & $10^{-2}$ \\
+		Adam $\beta_1$ & 0.9 & 0.9 & 0.9 \\
+		Adam $\beta_2$ & 0.99 & 0.99 & 0.99 \\ 
+		Snapshot batch size $N$ (SVRPG) & 100 & 100 & 100 \\
+		Mini-batch size $B$ (SVRPG) & 10 & 10 & 10 \\
+		Batch size (GPOMDP) & 10 & 10 & 100 \\
+		Max number of sub-iterations & 50 & 20 & 20 \\
+		Task horizon& 100 & 500 & 500 \\
+		Baseline& No & No & Yes \\
+		Discount factor $\gamma$& 0.99 & 0.995 & 0.99 \\
+		Total number of trajectories& 10000 & 20000 & 50000 \\
+		\hline  
+	\end{tabular}
+\end{table}
+Where not specified, meta-parameters are shared among G(PO)MDP and SVRPG.
+Refer to \cite{duan2016benchmarking} for more details about G(PO)MDP (REINFORCE in the paper) on the Half Cheetah task.\newpage
+
+
+Now we can properly anddress the results of our work. Figure \ref{fig:cartpole} compares \acs{SVRPG} with G(PO)MDP on a continuous variant of the classical Cart-pole task, which is a 2D balancing task. Despite using more trajectories on average for each parameter update, our algorithm shows faster convergence, which can be ascribed to the better quality of updates due to variance reduction.
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
@@ -100,8 +162,7 @@ More details on meta-parameters and exhaustive task descriptions are provided in
 	\vspace{-0.15in}
 \end{figure*}
 
-
-Figure \ref{fig:cartpole} compares \acs{SVRPG} with G(PO)MDP on a continuous variant of the classical Cart-pole task, which is a 2D balancing task. Despite using more trajectories on average for each parameter update, our algorithm shows faster convergence, which can be ascribed to the better quality of updates due to variance reduction.
+The Swimmer task is a 3D continuous-control locomotion task. This task is more difficult than cart-pole. In particular, the longer horizon and the more complex dynamics can have a dangerous impact on the variance of importance weights.
 
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
@@ -114,7 +175,9 @@ Figure \ref{fig:cartpole} compares \acs{SVRPG} with G(PO)MDP on a continuous var
 	\vspace{-0.15in}
 \end{figure*}
 
-The Swimmer task is a 3D continuous-control locomotion task. This task is more difficult than cart-pole. In particular, the longer horizon and the more complex dynamics can have a dangerous impact on the variance of importance weights. In this case, the self-normalization technique proposed in Section \ref{sec:prac} brings an improvement (even if not statistically significant), as shown in Figure \ref{fig:swimmertwo}. 
+ In this case, the self-normalization technique proposed in Section \ref{sec:prac} brings an improvement (even if not statistically significant), as shown in Figure \ref{fig:swimmertwo}.
+
+
 % Although the confidence intervals are never disjoint, the average of the self-normalized version is always higher, which we consider enough to employ the variant in the next comparison. 
 Figure \ref{fig:swimmerone} shows self-normalized \acs{SVRPG} against G(PO)MDP. Our algorithm outperforms G(PO)MDP for almost the entire learning process. Also here, we note an increase of speed in early iterations, and, toward the end of the learning process, the improvement becomes statistically significant.
 
