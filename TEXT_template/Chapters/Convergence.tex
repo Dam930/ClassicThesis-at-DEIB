@@ -83,19 +83,39 @@ As mentioned, the work of \cite{pirotta2013adaptive} provides a bound on the var
 \begin{align*}
 \Var\left[\gradApp{\theta_i}{N}\right] \leq \frac{R^2M_{\phi}^2H(1-\gamma^H)^2}{N\sigma^2(1-\gamma)^2}.
 \end{align*}
-The same authors provide a similar bound for G(PO)MDP. So we can considered Assumption \ref{ass:REINFORCE} satisfied.
+The same authors provide a similar bound for G(PO)MDP:
+\begin{align*}
+\Var\left[\gradApp{\theta_i}{N}\right] \leq \frac{R^2M_{\phi}^2}{N\sigma^2(1-\gamma)^2}\left[
+ \frac{1-\gamma^{2H}}{1-\gamma^2} + H\gamma^{2H} - 2\gamma^{2H}\frac{1-\gamma^{H}}{1-\gamma} \right].
+\end{align*}
+ So we can considered Assumption \ref{ass:REINFORCE} satisfied.
 
 
 It is noted in \cite{cortes2010learning} that, for any two Gaussian distributions $\mathcal{N}(\mu_1,\sigma_1)$ and $\mathcal{N}(\mu_2,\sigma_2)$, the variance of the importance weights from the latter to the former is bounded whenever $\sigma_2 > \frac{\sqrt{2}}{2}\sigma_1$. This is automatically satisfied by our fixed-variance Gaussian policies, since $\sigma_2=\sigma_1=\sigma$.
 We have demonstrated that the variance of importance weight is not infinite, by enforcing also that
 $\mathbb{V}ar\left[\omega(\tau| \vtheta_1, \vtheta_2)\right] \leq \VARIS$ we need a proper handling of the epoch size $m$.
-So, also Assumption \ref{ass:M2} is been satisfied.
+So, also Assumption \ref{ass:M2}, with proper handling of epoch size $m$, is been satisfied.
 
 
 We now briefly examine some generalizations of the simple Gaussian policy defined above that can be found in applications. Note that all this variants are employed in our experiments and in particular are used almost always in real applications:
 
 \paragraph{Multi-dimensional actions.}
-When actions are \newline multi-dimensional, factored Gaussian policies are typically employed, so the results extend trivially from the one-dimensional case. Actual multi-variate Gaussian distributions would require more calculations, but we do not expect substantially different results.
+When actions are \newline multi-dimensional, factored Gaussian policies are typically employed, so the results extend trivially from the one-dimensional case. 
+Given an bounded action space $\mathcal{A}\subset\mathbb{R}^n$ such that each dimension is bounded: $a_i\leq|\Aspace|$, a state space $\mathcal{S}\subset\mathbb{R}^m$, linear mean $\mu(s) = \Theta\vphi(s)$, where $\Theta$  is an $mxn$ matrix, and fixed covariance matrix $\Sigma$, the multivariate normal distribution is:
+
+\[
+\pi_{\Theta}(a\vert s) = \frac{1}{\sqrt{2\pi\mid\Sigma\mid}}\exp\left\{
+-\frac{1}{2}(a - \Theta\vphi(s))^T\Sigma^{-1}(a - \Theta\vphi(s))\right\},
+\]
+
+we show that:
+
+\begin{align*}
+&\nabla_{\Theta_{i,k}}\log\pi_{\Theta}(\tau) =  \phi_{i,k}(s)(a-\Theta\phi(s))\Sigma^{-1},\\
+&\frac{\partial^2}{\partial\Theta_{i,k}\partial\Theta_{j,z}}\log\pi_{\Theta}(\tau) = \phi_{i,k}(s)\phi_{j,z}(s)\Sigma^{-1}.
+\end{align*}
+
+by taking $\GRADLOG = nM_{\phi}|\Aspace|\Sigma^{-1}$ and $\HESSLOG = M_{\phi}^2\Sigma^{-1}$ the assumption is satisfied.
 
 \paragraph{Non-linear mean.}
 In complex continuous tasks, $\mu(s)$ often represents a deep neural network, or multi-layer perceptron, where $\vtheta$ are the weights of the network. The analysis of first and second order log-derivatives in such a scenario is beyond the scope of this thesis.
@@ -121,7 +141,7 @@ We use the notation $\tau_{i,h}$ to denote the $h$-th trajectory collected using
 \begin{definition}
 	For a random variable $X$:
 	\begin{align*}
-	\mathbb{E}_{t\vert s}\left[X\right] &\coloneqq 
+	&\mathbb{E}_{t\vert s}\left[X\right] \coloneqq 
 	\mathop{\mathbb{E}}_{\substack{\tau_j\sim\pi(\cdot\vert\wt{\vtheta}^s)\forall j \in N \\ \tau_{i,h}\sim\pi(\cdot\vert\vtheta^{s+1}_i) \forall h \in B, \text{ for $i=0,\dots,t$}}}{\left[X \vert \wt{\vtheta^s}\right]} \\
 	&\coloneqq \EVV[\tau_j\sim\pi(\cdot\vert\wt{\vtheta}^s)\forall j \in N]{
 		\EVV[\tau_{0,h}\sim\pi(\cdot\vert\vtheta_0^{s+1}) \forall h \in B]
@@ -146,13 +166,13 @@ We want to point up that this is exactly the non-stationarity of the \acs{RL} pr
 	\Covs{X}{Y} &\coloneqq \Tr\left(\Ets{(X-\Ets{X})(Y-\Ets{Y})^T}\right), \\
 	\Vars{X} &\coloneqq \Covs{X}{Y},
 	\end{align*}
-	where $\Tr(\cdot)$ denotes the trace of a matrix. We have to define this because this is only one of all the possible definitions of vector variance. From the linearity of expected value we have the following:
+	where $\Tr(\cdot)$ denotes the trace of a matrix. From the linearity of expected value we have the following:
 	\begin{equation}\label{neweq:1}
 	\Vars{X} = \Es{\norm[]{X-\Es{X}}^2}
 	\end{equation}
 	$\Covts[t]{X}{Y}$ and $\Varts[t]{X}$ are defined in the same way from $\Ets[t]{X}$.
 \end{definition}
-
+Note that we had to define the variance of vectors because there are a lot of vector variance definitions, this definition is that we  believe it is better for our calculations. 
 \begin{definition}
 	The full gradient estimation error is:
 	\[
@@ -262,10 +282,10 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	For ease of notation denote $\omega(\tau_i) := \omega(\tau_i|\vtheta^{s+1}_t, \wt{\vtheta}^{s})$. Then,
 	\begingroup
 	\allowdisplaybreaks
+	\newgeometry{left=1cm,layouthoffset=-0.5cm,right=3cm,bottom=2cm,head=2cm}
 	\begin{align}
 	%            \Ets{\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2}
-	&\mathbb{E}_{t|s}\big[\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2\big] \\
-	&= \Ets{\norm[]{\gradApp{\wt{\vtheta}^s}{N}
+	&\mathbb{E}_{t|s}\big[\norm[2]{\gradBlack{\vtheta_t^{s+1}}}^2\big] = \Ets{\norm[]{\gradApp{\wt{\vtheta}^s}{N}
 			+\frac{1}{B}\sum_{i=0}^{B-1} g(\tau_i\vert\vtheta_t^{s+1})
 			-\frac{1}{B}\sum_{i=0}^{B-1}
 			\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)}^2} \nonumber\\
@@ -274,8 +294,8 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	+\frac{1}{B}\sum_{i=0}^{B-1}\left( 
 	g(\tau_i\vert\vtheta_t^{s+1}) -
 	\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)
-	 \right.\right.\nonumber
-	\\&\qquad\left.\left.
+	%\right.\right.\nonumber
+	%\\&\qquad\left.\left.
 	\pm \gradJ{\vtheta_t^{s+1}} \pm \gradJ{\wt{\vtheta}^s} 
 	% -\gradJ{\vtheta_t^{s+1}} + \gradJ{\wt{\vtheta}^s}
 	% +\gradJ{\vtheta_t^{s+1}} - \gradJ{\wt{\vtheta}^s}
@@ -288,7 +308,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	\frac{1}{B}\sum_{i=0}^{B-1}\left(
 	g(\tau_i\vert\vtheta_t^{s+1}) -
 	\omega(\tau_i)g(\tau_i\vert\wt{\vtheta}^s)\right)
-		\right.\right.\nonumber\\&\qquad\left.\left.
+	%	\right.\right.\nonumber\\&\qquad\left.\left.
 	- \Ets{
 		\frac{1}{B}\sum_{i=0}^{B-1}\left(
 		g(\tau_i\vert\vtheta_t^{s+1}) -
@@ -376,10 +396,11 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	%
 	&\leq \Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} 
 	+\frac{1}{N}\Vars{g(\cdot\vert\wt{\vtheta}^s)}
-	\nonumber\\ &\qquad
+%	\nonumber\\ &\qquad
 	+\frac{L_g^2}{B}\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\wt{\vtheta}^s}^2}
 	+\frac{\Gamma\VARIS}{B}, \label{eq:5}
 	\end{align}
+	\restoregeometry
 	\endgroup
 	where (\ref{neweq:2}) is from (\ref{neweq:1}), (\ref{eq:1}) is from the definition of $\gradApp{\vtheta}{N}$, (\ref{eq:2}) is from Lemma \ref{lemma:varineq}, (\ref{eq:3}) is from Lemma \ref{lemma:gsmooth}, 
 	(\ref{eq:4}) is from Lemma \ref{lemma:gbound}, and (\ref{eq:5}) is from Assumption \ref{ass:M2}.
@@ -653,6 +674,6 @@ By analysing the upper-bound in Theorem~\ref{theo:convergence}:
  	\item the $\mathcal{O}(\nicefrac{1}{B})$ term is due to the variance of importance weighting. The variance of importance weighting can counteract our main objective, which is variance reduction.
  \end{enumerate}
 To achieve asymptotic convergence, the batch size $N$ and the mini-batch size $B$ should increase over time.
- We would like to highlight that our algorithm have sense if  $B << N$.\newline
+ We would like to highlight that our algorithm makes sense if  $B << N$.\newline
 In practice, it is enough to choose $N$ and $B$ large enough to make the second and the third term negligible, \ie to mitigate the variance introduced by \acs{FG} approximation and importance sampling, respectively.
 Once the last two terms can be neglected, the number of trajectories needed to achieve $\norm[2]{\gradJ{\vtheta}}^2\leq\epsilon$ is $O(\frac{B+\nicefrac{N}{m}}{\epsilon})$ compared to $O(\frac{N}{\epsilon^2})$ for \acs{SG}. In this sense, an advantage over batch gradient ascent can be achieved with properly selected meta-parameters. 
