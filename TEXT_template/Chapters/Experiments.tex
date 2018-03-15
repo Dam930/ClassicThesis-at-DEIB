@@ -26,7 +26,7 @@ In the following, we will always use this practical variant.
 % At this point, the open question is how to properly select the step size $\alpha$ and the sub-iteration number $m$ in practical applications.
 The step size $\alpha$ is crucial to balance variance reduction and efficiency, while
 % The first parameter is crucial to balance the variance introduced by estimations within sub-iterations with respect to the variance introduced by estimations associated to the snapshots.
-the epoch length $m$ influences the variance introduced by the importance weights. Low values of $m$ are associated with small variance but increase the frequency of snapshot points (which means many \acs{FG} computations). High values of $m$ may move policy $\pi_{\vtheta_t}$ far away from the snapshot policy $\pi_{\wt{\vtheta}}$, causing large variance in the importance weights. We will jointly set the two meta-parameters.
+the epoch length $m$ influences the variance introduced by the importance weights. Low values of $m$ are associated with small variance, but increase the frequency of snapshot points (which means many \acs{FG} computations). High values of $m$ may move policy $\pi_{\vtheta_t}$ far away from the snapshot policy $\pi_{\wt{\vtheta}}$, causing large variance in the importance weights. We will jointly set the two meta-parameters.
 % the farther the distance between the snapshot policy and the current one, the higher the variance of the importance weights.
 
 \textbf{Adaptive step size.}
@@ -60,18 +60,18 @@ The use of two \acs{ADAM} estimators allows to capture and exploit this property
 		\label{A:adam}
 		Adam}
 \end{algorithm}
-We report pseudo-code of the original ADAM \citep{kingma2014adam} in Algorithm \ref{A:adam}. As mentioned, we use two distinct instances of ADAM to manage different sources of variance: one related to the snapshots, and one to the sub-iterations. In this way the ADAM associated to the snapshots takes into account only the history of gradient moments at the snapshots. By using Algorithm \ref{A:adam} as a subroutine $\textbf{ADAM}(g,\alpha,\beta)$, we can explicitly define our gradient updates:
+We report pseudo-code of the original \acs{ADAM} \citep{kingma2014adam} in Algorithm \ref{A:adam}. As mentioned, we use two distinct instances of \acs{ADAM} to manage different sources of variance: one related to the snapshots, and one to the sub-iterations. In this way the \acs{ADAM} associated to the snapshots takes into account only the history of gradient moments at the snapshots. By using Algorithm \ref{A:adam} as a subroutine $\textbf{ADAM}(g,\alpha,\beta)$, we can explicitly define our gradient updates:
 
 \begin{align*}
 \vtheta^{s+1}_1 &= \wt{\vtheta}^s + \textbf{ADAM}\left(\wh{\nabla}_N J(\wt{\vtheta}^s),\beta_1,\beta_2,\alpha\right),\\
-\vtheta^{s+1}_{t+1} &= \textbf{ADAM}\Big( 
+\vtheta^{s+1}_{t+1} &= \vtheta^{s+1}_t + \textbf{ADAM}\Big( 
 %        v_t^{s+1}
 \blacktriangledown J(\vtheta^{s+1}_t),\beta_1,\beta_2,\frac{\alpha}{2}\Big)
 \text{ for $t=1,\dots,m-1$},
 \end{align*}
 
 where separate histories are kept for estimated first moments $\kappa_{FG},\kappa_{IS}$ and estimated second moments $\nu_{FG},\nu_{IS}$.
-The meta-parameters $\alpha,\beta_1,\beta_2$ are constant and set to default values or with minor manual tuning (see table \ref{table:metaparams}). Note that we double the sub-iterations' learning rate for the snapshot ADAM since we can rely on a larger number of trajectories ($N$ instead of $B$) to control the variance.
+The meta-parameters $\alpha,\beta_1,\beta_2$ are constant and set to default values or with minor manual tuning (see table \ref{table:metaparams}). Note that we double the sub-iterations' learning rate for the snapshot \acs{ADAM} since we can rely on a larger number of trajectories ($N$ instead of $B$) to control the variance.
 
 \textbf{Adaptive epoch length.}
 It is easy to imagine that a predefined schedule (\eg $m$ fixed in advance or changed with a policy-independent process) may poorly perform due to the high variability of the updates.
@@ -101,7 +101,7 @@ Introducing self-normalization in the context of our algorithm, we switch from E
 \right].
 \end{align*}
 where $\Omega = \sum_{i=0}^{B-1}\omega(\tau_i|\vtheta_t, \wt{\vtheta})$.
-In the next section we show that self-normalization can provide a performance improvement.
+In the next section we also show that self-normalization can provide a performance improvement.
 
 \vspace{-0.05in}
 \section{Experimental Results}\label{sec:exp}
@@ -156,7 +156,7 @@ Now we can properly anddress the main results of our work. Figure \ref{fig:cartp
 		\centering
 		\includegraphics[width=0.75\textwidth]{Images/Experiments/cart_pole_SVRPG_vs_GPOMDP_tex.pdf}
 		\vspace{-0.1in}
-		\caption{On-line performance over sampled trajectories of SVRPG vs G(PO)MDP in the Cart-pole task, with 90\% confidence intervals.}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Cart-pole task, with 90\% confidence intervals.}
 		\label{fig:cartpole}
 	\end{minipage}
 	\vspace{-0.15in}
@@ -169,7 +169,7 @@ The Swimmer task is a 3D continuous-control locomotion task. This task is more d
 		\centering
 		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_self_normalized_SVRPG_vs_SVRPG_tex.pdf}
 		\vspace{-0.1in}
-		\caption{On-line performance over sampled trajectories of self-Normalized SVRPG vs unbiased SVRPG in the Swimmer task, with 90\% confidence intervals.}
+		\caption{On-line performance over sampled trajectories of self-Normalized \acs{SVRPG} vs unbiased \acs{SVRPG} in the Swimmer task, with 90\% confidence intervals.}
 		\label{fig:swimmertwo}
 	\end{minipage}
 	\vspace{-0.15in}
@@ -186,7 +186,7 @@ Figure \ref{fig:swimmerone} shows self-normalized \acs{SVRPG} against G(PO)MDP. 
 		\centering
 		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_self_normalized_SVRPG_vs_GPOMDP_tex.pdf}
 		\vspace{-0.1in}
-		\caption{On-line performance over sampled trajectories of self-Normalized SVRPG vs G(PO)MDP in the Swimmer task, with 90\% confidence intervals}
+		\caption{On-line performance over sampled trajectories of self-Normalized \acs{SVRPG} vs G(PO)MDP in the Swimmer task, with 90\% confidence intervals}
 		\label{fig:swimmerone}
 	\end{minipage}
 	\vspace{-0.15in}
@@ -235,8 +235,12 @@ where $s\in\mathbb{R}^d$ is the state vector and $\odot$ is the element-wise pro
 b(s_t,a_t) = \boldsymbol{\lambda}^T\vphi(s_t,t).
 \]
 The baseline is fitted from scratch at each policy gradient iteration, with least squares, to match state-value function $V^{\pi}(s)$.
-When used with SVRPG, the critic parameter $\boldsymbol{\lambda}$ is updated only at the snapshot. Table \ref{tab:1} shows promising results, meaning that a combination of the baseline usage and \acs{SVRG}-like variance reduction can yield an improvement that the two techniques alone are not able to achieve.
+When used with \acs{SVRPG}, the critic parameter $\boldsymbol{\lambda}$ is updated only at the snapshot. Table \ref{tab:1} shows promising results, meaning that a combination of the baseline usage and \acs{SVRG}-like variance reduction can yield an improvement that the two techniques alone are not able to achieve.
 \subsection{Exploratory Results on Other Gradient Estimators}
+Another preliminary attempt was made using different gradient estimators in our algorithm. Therefore equation \eqref{E:svrpg.estimate.batch} has been tweked in order to get new gradient estimators which are still unbiased. Here we report the obtained expressions:
 
+
+
+The results coming from the usage of these new estimators within our algorithm are not satisfying except for the equation \ref{} version in cart-pole (see \hyperref[chap:appendix]{Appendix A} for the detailed images). These outcomes are due to the fact that the work performed in these directions is currently at an early stage and would need a more thoughtful approach in order to have a chance to make them properly work in practice.
 
 \vspace{-0.05in}
