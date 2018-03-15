@@ -554,7 +554,7 @@ Before addressing the main convergence theorem, we prove some useful lemmas.
 	-c_{t+1}\frac{\alpha_t}{N}\Vars{g(\cdot\vert\tilde{\vtheta}^s)} -c_{t+1}\alpha_t\Ets[t-1]{\norm[]{\vtheta_t^{s+1}-\tilde{\vtheta}^s}^2} \label{eq:18}\\
 	%
 	&= \Ets[t-1]{J(\vtheta_t^{s+1})} - c_{t+1}\left(1+\alpha_t\beta_t+\alpha_t\right)\Ets[t-1]{\norm[]{\vtheta_{t}^{s+1}-\tilde{\vtheta}}^2} \nonumber\\
-	&\qquad-\alpha_t^2\left(\frac{L}{2}+c_{t+1}\right)\Ets{\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2} +\frac{\alpha_t}{2}\left(1-\frac{2c_{t+1}}{\beta_t}\right)\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} \nonumber\\
+	&\qquad-\alpha_t^2\left(\frac{L}{2}+c_{t+1}\right)\Ets{\norm[]{\gradBlack{\vtheta_t^{s+1}}}^2}\nonumber\\ &\qquad+\frac{\alpha_t}{2}\left(1-\frac{2c_{t+1}}{\beta_t}\right)\Ets[t-1]{\norm[]{\gradJ{\vtheta_t^{s+1}}}^2} \nonumber\\
 	&\qquad-\frac{\alpha_t}{2N}\left(1+2c_{t+1}\right)\Vars{g(\cdot\vert\tilde{\vtheta}^s)} \nonumber\\
 	%
 	&\geq  \Ets[t-1]{J(\vtheta_t^{s+1})} - c_{t+1}\left(1+\alpha_t\beta_t+\alpha_t\right)\Ets[t-1]{\norm[]{\vtheta_{t}^{s+1}-\tilde{\vtheta}}^2} \nonumber\\
@@ -629,8 +629,8 @@ We finally provide the proof of the convergence theorem:
 	\end{align*}
 	By using the definition of $R^s_t$ in~\eqref{E:lyapunov.function}, the fact that $c_m = 0$ and $\vtheta^{s+1}_0 = \wt{\vtheta}^s = \vtheta^s_m$, we can state that:
 	\begin{align*}
-	R^{s+1}_m - R^{s+1}_0 
-	&= \EVV[m|s]{J(\vtheta^{s+1}_{m})- c_m \norm[]{\vtheta^{s+1}_{m} - \wt{\vtheta}^s}^2 } - \EVV[0|s]{J(\vtheta^{s+1}_{0}) - c_0 \norm[]{\vtheta^{s+1}_0 - \wt{\vtheta}^s}^2}\\
+	R^{s+1}_m - &R^{s+1}_0 \\
+	& = \EVV[m|s]{J(\vtheta^{s+1}_{m})- c_m \norm[]{\vtheta^{s+1}_{m} - \wt{\vtheta}^s}^2 } - \EVV[0|s]{J(\vtheta^{s+1}_{0}) - c_0 \norm[]{\vtheta^{s+1}_0 - \wt{\vtheta}^s}^2}\\
 	&= \EVV[m|s]{J(\vtheta^{s+1}_{m})} - \EVV[0|s]{J(\wt{\vtheta}^s)}
 	= \EVV[m|s]{J(\wt{\vtheta}^{s+1}) - J(\wt{\vtheta}^s)}
 	\end{align*}
@@ -650,8 +650,8 @@ We finally provide the proof of the convergence theorem:
 	Finally, we consider the expectation \wrt all sources of randomness, including the uniform sampling of the output parameter:
 	\begin{align*}
 	\EVV[]{\norm[]{\gradJ{(\vtheta_t^{s+1})}}^2} 
-	&=\frac{1}{T}\sum_{s=0}^{S-1}\sum_{t=0}^{m-1}\Ets{\norm[]{\gradJ{(\vtheta_t^{s+1})}}^2} 
-	\leq
+	&=\frac{1}{T}\sum_{s=0}^{S-1}\sum_{t=0}^{m-1}\Ets{\norm[]{\gradJ{(\vtheta_t^{s+1})}}^2} \\
+	&\leq
 	\frac{J(\vtheta^*) - J(\vtheta^0)}{\psi T} + \frac{\zeta}{N} + \frac{\xi}{B}.
 	\end{align*}
  \end{proof}
