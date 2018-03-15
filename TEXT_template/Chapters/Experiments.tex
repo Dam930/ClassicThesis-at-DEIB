@@ -237,7 +237,7 @@ b(s_t,a_t) = \boldsymbol{\lambda}^T\vphi(s_t,t).
 The baseline is fitted from scratch at each policy gradient iteration, with least squares, to match state-value function $V^{\pi}(s)$.
 When used with \acs{SVRPG}, the critic parameter $\boldsymbol{\lambda}$ is updated only at the snapshot. Table \ref{tab:1} shows promising results, meaning that a combination of the baseline usage and \acs{SVRG}-like variance reduction can yield an improvement that the two techniques alone are not able to achieve.
 \subsection{Exploratory Results on Other Gradient Estimators}
-Another preliminary attempt was made using different gradient estimators in our algorithm. Therefore equation \eqref{E:svrpg.estimate.batch} has been tweked in order to get new gradient estimators which are still unbiased. Here we report the obtained expressions:
+Another preliminary attempt was made using different gradient estimators in our algorithm. Therefore equation \eqref{E:svrpg.estimate.batch} has been rearranged in order to get new gradient estimators which are still unbiased. Here we report the obtained expressions:
 
 
 
