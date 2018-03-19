@@ -209,23 +209,23 @@ In Cart-pole, disjoint confidence intervals show that the advantage is statistic
 		\phantom{abc} & Avg Return & Norm. Std & C.I.
 		\\\cmidrule{2-4}
 		Cart-pole & $618.49$ & $21.09$ & $[579.82, 657.16]$\\
-		Swimmer & $39.86$ & $3.84$ & $[32.82, 46.89]$\\
-		Half-cheetah & $1183.1^\dagger$ & $69.20^\dagger$ & $[1035.58, 1330.62]^\dagger$\\
+		Swimmer & $45.10$ & $2.37$ & $[40.13, 50.07]$\\
+		Half-cheetah & $1263.59$ & $212.73$ & $[810.09, 1717.09]$\\
 		\\\cmidrule{2-4}
 		\phantom{abc} & \multicolumn{3}{c}{SVRPG}
 		\\\cmidrule{2-4}
 		\phantom{abc} & Avg Return & Norm. Std & C.I.
 		\\\cmidrule{2-4}
 		Cart-pole & $736.31$ & $16.51$ & $[706.04, 766.57]$\\
-		Swimmer & $49.60$ & $3.27$ & $[43.60, 55.60]$\\
-		Half-Cheetah & $1480.95$ & $73.21$ & $[1324.87, 1637.03]$\\
+		Swimmer & $46.48$ & $2.86$ & $[40.49, 52.46]$\\
+		Half-Cheetah & $1397.07$ & $66.74$ & $[1254.78, 1539.36]$\\
 		\bottomrule
 	\end{tabular}
 	\vspace{-0.05in}
 \end{table*}
 
 \subsection{Preliminary Results on Actor-Critic.}\label{subsec:actorcritic} %As mentioned, 
-Another variance-reduction technique in policy gradient consists of using baselines or \textit{critics}. This tool is orthogonal to the methods described in this paper, and the theoretical results of \hyperref[chap:convergence]{Chapter 4} are general in this sense. In the experiments described so far, we compared against the so-called \textit{actor-only} G(PO)MDP, \ie without the baseline. To move towards a more general understanding of the variance issue in policy gradient, we also test \acs{SVRPG} in an \textit{actor-critic} scenario. To do so, we consider the more challenging MuJoCo~\citep{todorov2012mujoco} Half-cheetah task, a 3D locomotion task that has a larger state-action space than Swimmer. Table \ref{tab:1} also reports the comparison between \acs{SVRPG} and G(PO)MDP\footnote{\citet{duan2016benchmarking} report results on REINFORCE. However, inspection on \textit{rllab} code and documentation reveals that it is actually \ac{PGT} \cite{sutton2000policy}, which is equivalent to G(PO)MDP \citep[shown by][]{peters2008reinforcement}. Using the name REINFORCE in a general way is inaccurate, but widespread.} on Half-cheetah using the critic suggested in \cite{duan2016benchmarking} for both algorithms. More precisely, this critic is a linear state-value function estimator. 
+Another variance-reduction technique in policy gradient consists in using baselines or \textit{critics}. This tool is orthogonal to the methods described in this paper, and the theoretical results of \hyperref[chap:convergence]{Chapter 4} are general in this sense. In the experiments described so far, we compared against the so-called \textit{actor-only} G(PO)MDP, \ie without the baseline. To move towards a more general understanding of the variance issue in policy gradient, we also test \acs{SVRPG} in an \textit{actor-critic} scenario. To do so, we consider the more challenging MuJoCo~\citep{todorov2012mujoco} Half-cheetah task, a 3D locomotion task that has a larger state-action space than Swimmer. Table \ref{tab:1} also reports the comparison between \acs{SVRPG} and G(PO)MDP\footnote{\citet{duan2016benchmarking} report results on REINFORCE. However, inspection on \textit{rllab} code and documentation reveals that it is actually \ac{PGT} \cite{sutton2000policy}, which is equivalent to G(PO)MDP \citep[shown by][]{peters2008reinforcement}. Using the name REINFORCE in a general way is inaccurate, but widespread.} on Half-cheetah using the critic suggested in \cite{duan2016benchmarking} for both algorithms. More precisely, this critic is a linear state-value function estimator. 
 The (time-varying) feature encoding for the linear baseline is:
 \begin{align*}
 \vphi(s,t)=[s, s \odot s, 0.01t, (0.01t)^2, (0.01t)^3,1],
@@ -235,12 +235,49 @@ where $s\in\mathbb{R}^d$ is the state vector and $\odot$ is the element-wise pro
 b(s_t,a_t) = \boldsymbol{\lambda}^T\vphi(s_t,t).
 \]
 The baseline is fitted from scratch at each policy gradient iteration, with least squares, to match state-value function $V^{\pi}(s)$.
-When used with \acs{SVRPG}, the critic parameter $\boldsymbol{\lambda}$ is updated only at the snapshot. Table \ref{tab:1} shows promising results, meaning that a combination of the baseline usage and \acs{SVRG}-like variance reduction can yield an improvement that the two techniques alone are not able to achieve.
-\subsection{Exploratory Results on Other Gradient Estimators}
-Another preliminary attempt was made using different gradient estimators in our algorithm. Therefore equation \eqref{E:svrpg.estimate.batch} has been rearranged in order to get new gradient estimators which are still unbiased. Here we report the obtained expressions:
+When used with \acs{SVRPG}, the critic parameter $\boldsymbol{\lambda}$ is updated only at the snapshot. Table \ref{tab:1} shows promising results, meaning that a combination of the baseline usage and \acs{SVRG}-like variance reduction can yield an improvement that the two techniques alone are not able to achieve. For a more thorough evaluation also see figure \ref{fig:hcone} and figure \ref{fig:hctwo}. In the former figure we see how our algorithm has a lot less variance and a higher mean even though the confidence intervals are not disjoint. Whereas in the latter figure we can clearly see how the self-normalization can improve the performance of our algorithm.
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/half_cheetah_Self_Normalized_SVRPG_vs_GPOMDP.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of self-Normalized \acs{SVRPG} vs G(PO)MDP in the Half-Cheetah task, with 90\% confidence intervals}
+		\label{fig:hcone}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
 
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/half_cheetah_SVRPG_vs_SN_SVRPG.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of self-Normalized \acs{SVRPG} vs unbiased \acs{SVRPG} in the Half-Cheetah task, with 90\% confidence intervals.}
+		\label{fig:hctwo}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
 
+\subsection{Exploratory Results on Other Gradient Estimators}\label{subsec:oge}
+Another preliminary attempt was made using different gradient estimators in our algorithm. Therefore equation \eqref{E:svrpg.estimate.batch} has been rearranged in order to get new gradient estimators. Here we report the obtained expressions:
 
-The results coming from the usage of these new estimators within our algorithm are not satisfying except for the equation \ref{} version in cart-pole (see \hyperref[chap:appendix]{Appendix A} for the detailed images). These outcomes are due to the fact that the work performed in these directions is currently at an early stage and would need a more thoughtful approach in order to have a chance to make them properly work in practice.
+\begin{align}\label{E:svrpg.b.version}
+	\blacktriangledown J(\vtheta_{t}) &:= v_t= \wh{\nabla}_N J(\wt{\vtheta})\\ \notag
+	& \quad{} + 
+		\frac{1}{B} \sum_{i=0}^{B-1} \left[
+		\omega(\tau_i|\wt{\vtheta}, \vtheta_t)g(\tau_i|\wt{\vtheta}) - g(\tau_i|\wt{\vtheta})
+		\right]
+\end{align}
+where the sampling distribution is $\pi_{\wt{\vtheta}}$ for the mini-batch terms.
+\begin{align}\label{E:svrpg.c.version}
+	\blacktriangledown J(\vtheta_{t}) &:= v_t= \omega(\tau_i|\wt{\vtheta}, \vtheta_t)\wh{\nabla}_N J(\wt{\vtheta})\\ \notag
+	& \quad{} + 
+		\frac{1}{B} \sum_{i=0}^{B-1} \left[
+		g(\tau_i|\vtheta_t) - g(\tau_i|\wt{\vtheta})
+		\right]
+\end{align}
+where the sampling distribution is $\pi_{\vtheta_t}$ for the mini-batch terms.\newline
+
+The results coming from the usage of these new estimators within our algorithm are not satisfying except for the equation \ref{E:svrpg.b.version} version in cart-pole (see \hyperref[chap:appendix]{Appendix A} for the detailed images). These outcomes are due to the fact that the work performed in these directions is currently at an early stage and would need a more thoughtful approach in order to have a chance to make them properly work in practice.
 
 \vspace{-0.05in}
