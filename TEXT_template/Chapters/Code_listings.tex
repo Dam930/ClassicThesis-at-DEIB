@@ -97,3 +97,41 @@ Here we present all the exploratory results for the two versions introduced in s
 	\end{minipage}
 	\vspace{-0.15in}
 \end{figure*}
+\clearpage
+\vspace{-0.05in}
+\section{Cart-Pole Task}
+\vspace{-0.05in}
+Here we present all the exploratory results for the two versions introduced in section \ref{subsec:oge} for what concert the Cart-Pole task.
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/cart_pole_GPOMDP_vs_SVRPG_B.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Cart-Pole task where we used \ref{E:svrpg.b.version} as gradient estimator, with 90\% confidence intervals.}
+		\label{fig:cartpole1}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/cart_pole_GPOMDP_vs_SVRPG_B_reuse.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Cart-Pole task where we used \ref{E:svrpg.b.version} as gradient estimator, with 90\% confidence intervals.}
+		\label{fig:cartpole2}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/cart_pole_GPOMDP_vs_SVRPG_C.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Cart-Pole task where we used \ref{E:svrpg.c.version} as gradient estimator, with 90\% confidence intervals.}
+		\label{fig:cartpole3}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
