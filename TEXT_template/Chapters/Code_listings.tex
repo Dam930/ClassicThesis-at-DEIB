@@ -33,6 +33,17 @@ Here we present all the exploratory results for the two versions introduced in s
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/half_cheetah_GPOMDP_vs_SVRPG_B_reuse.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Half-Cheetah task where we used \ref{E:svrpg.b.version} as gradient estimator and trajectories reusage, with 90\% confidence intervals.}
+		\label{fig:hcnine}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
 		\includegraphics[width=0.75\textwidth]{Images/Experiments/half_cheetah_GPOMDP_vs_SN_SVRPG_B.pdf}
 		\vspace{-0.1in}
 		\caption{On-line performance over sampled trajectories of Self Normalized \acs{SVRPG} vs G(PO)MDP in the Half-Cheetah task where we used \ref{E:svrpg.b.version} as gradient estimator, with 90\% confidence intervals.}
@@ -47,6 +58,17 @@ Here we present all the exploratory results for the two versions introduced in s
 		\vspace{-0.1in}
 		\caption{On-line performance over sampled trajectories of Self Normalized \acs{SVRPG} vs G(PO)MDP in the Half-Cheetah task where we used \ref{E:svrpg.c.version} as gradient estimator, with 90\% confidence intervals.}
 		\label{fig:hcsix}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/half_cheetah_GPOMDP_vs_SN_SVRPG_B_reuse.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of Self Normalized \acs{SVRPG} vs G(PO)MDP in the Half-Cheetah task where we used \ref{E:svrpg.b.version} as gradient estimator and trajectories reusage, with 90\% confidence intervals.}
+		\label{fig:hcten}
 	\end{minipage}
 	\vspace{-0.15in}
 \end{figure*}
@@ -73,10 +95,56 @@ Here we present all the exploratory results for the two versions introduced in s
 	\vspace{-0.15in}
 \end{figure*}
 
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/half_cheetah_SVRPG_vs_SN_SVRPG_B_reuse.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of Self Normalized \acs{SVRPG} vs \acs{SVRPG} in the Half-Cheetah task where we used \ref{E:svrpg.b.version} as gradient estimator and trajectories reusage, with 90\% confidence intervals.}
+		\label{fig:hceleven}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
 \clearpage
 \section{Swimmer Mujoco Task}
 \vspace{-0.05in}
 Here we present all the exploratory results for the two versions introduced in section \ref{subsec:oge} for what concert the Swimmer task.
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_SVRPG_vs_GPOMDP_B.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Swimmer task where we used \ref{E:svrpg.b.version} as gradient estimator, with 90\% confidence intervals.}
+		\label{fig:swimmerfive}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_SVRPG_vs_GPOMDP_C.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Swimmer task where we used \ref{E:svrpg.c.version} as gradient estimator, with 90\% confidence intervals.}
+		\label{fig:swimmerfour}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_GPOMDP_vs_SVRPG_B_reuse.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Swimmer task where we used \ref{E:svrpg.b.version} as gradient estimator and trajectories reusage, with 90\% confidence intervals.}
+		\label{fig:swimmersix}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
@@ -87,13 +155,99 @@ Here we present all the exploratory results for the two versions introduced in s
 	\end{minipage}
 	\vspace{-0.15in}
 \end{figure*}
+
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
-		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_SVRPG_vs_GPOMDP_B.pdf}
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_GPOMDP_vs_SN_SVRPG_C.pdf}
 		\vspace{-0.1in}
-		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Swimmer task where we used \ref{E:svrpg.b.version} as gradient estimator, with 90\% confidence intervals.}
-		\label{fig:swimmerfive}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Swimmer task where we used \ref{E:svrpg.c.version} as gradient estimator, with 90\% confidence intervals.}
+		\label{fig:swimmerseven}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_GPOMDP_vs_SN_SVRPG_B_reuse.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Swimmer task where we used \ref{E:svrpg.b.version} as gradient estimator and trajectories reusage, with 90\% confidence intervals.}
+		\label{fig:swimmereight}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_SVRPG_vs_sn_SVRPG_B.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of Self Normalized \acs{SVRPG} vs \acs{SVRPG} in the Half-Cheetah task where we used \ref{E:svrpg.b.version} as gradient estimator, with 90\% confidence intervals.}
+		\label{fig:swimmernine}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_SVRPG_vs_sn_SVRPG_C.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of Self Normalized \acs{SVRPG} vs \acs{SVRPG} in the Half-Cheetah task where we used \ref{E:svrpg.c.version} as gradient estimator, with 90\% confidence intervals.}
+		\label{fig:swimmerten}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_SVRPG_vs_SN_SVRPG_B_reuse.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of Self Normalized \acs{SVRPG} vs \acs{SVRPG} in the Half-Cheetah task where we used \ref{E:svrpg.b.version} as gradient estimator and trajectories reusage, with 90\% confidence intervals.}
+		\label{fig:swimmereleven}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+
+
+\clearpage
+\vspace{-0.05in}
+\section{Cart-Pole Task}
+\vspace{-0.05in}
+Here we present all the exploratory results for the two versions introduced in section \ref{subsec:oge} for what concert the Cart-Pole task.
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/cart_pole_GPOMDP_vs_SVRPG_B.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Cart-Pole task where we used \ref{E:svrpg.b.version} as gradient estimator, with 90\% confidence intervals.}
+		\label{fig:cartpole1}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+
+
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/cart_pole_GPOMDP_vs_SVRPG_B_reuse.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Cart-Pole task where we used \ref{E:svrpg.b.version} as gradient estimator, with 90\% confidence intervals.}
+		\label{fig:cartpole2}
+	\end{minipage}
+	\vspace{-0.15in}
+\end{figure*}
+\begin{figure*}[h]
+	\begin{minipage}[h]{1\textwidth}
+		\centering
+		\includegraphics[width=0.75\textwidth]{Images/Experiments/cart_pole_GPOMDP_vs_SVRPG_C.pdf}
+		\vspace{-0.1in}
+		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP in the Cart-Pole task where we used \ref{E:svrpg.c.version} as gradient estimator, with 90\% confidence intervals.}
+		\label{fig:cartpole3}
 	\end{minipage}
 	\vspace{-0.15in}
 \end{figure*}
