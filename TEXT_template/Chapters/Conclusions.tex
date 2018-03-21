@@ -1,12 +1,12 @@
 \chapter{Conclusions} \label{chap:conclusions}
 \section{Related Work}
 \vspace{-0.05in}
-Despite the considerable interest received in \acs{SL}, variance-reduced gradient approaches have not attracted the \acs{RL} community.
+Despite the considerable interest received in \acs{SL}, variance-reduced gradient approaches have not attracted the \acs{RL} community so far.
 As far as we know, there are just two applications of \acs{SVRG} in \acs{RL}.
 The first approach~\citep{du2017svrgpe} aims to exploit \acs{SVRG} for policy evaluation.
-The policy evaluation problem is more straightforward than the one faced in this composition (control problem).
+The policy evaluation problem is more straightforward than the one faced in this thesis (control problem).
 In particular, since the goal is to evaluate just the performance of a predefined policy, the optimization problem is stationary.
-The setting considered in the paper is the one of policy evaluation by minimizing the \ac{MSPBE} with a linear approximation of the value function. \citet{du2017svrgpe} shown that this problem can be equivalently reformulated as a convex-concave saddle-point problem that is characterized by a finite-sum structure.
+The setting considered in the paper is the one of policy evaluation by minimizing the \ac{MSPBE} with a linear approximation of the value function. \citet{du2017svrgpe} showed that this problem can be equivalently reformulated as a convex-concave saddle-point problem that is characterized by a finite-sum structure.
 This problem can be solved using a variant of \acs{SVRG}~\citep{Palaniappan2016svrgsaddle} for which convergence guarantees have been provided.
 The second approach~\citep{xu2017svrgtrpo} uses \acs{SVRG} as a practical method to solve the optimization problem faced by \acs{TRPO} at each iteration. This is just a direct application of \acs{SVRG} to a problem having finite-sum structure since no specific structure of the \acs{RL} problem is exploited.
 It is worth to mention that, for practical reasons, the authors proposed to use a Newton conjugate gradient method with \acs{SVRG}.
@@ -17,10 +17,7 @@ The specific structure of the policy gradient allows incorporating a baseline (\
 Although the baseline can be arbitrarily selected, literature often refers to the optimal baseline as the one minimizing the variance of the estimate.
 Nevertheless, even the baseline needs to be estimated from data. This fact may partially reduce its effectiveness by introducing variance.
 Even if these approaches share the same goal as \acs{SVRG}, they are substantially different.
-In particular, the proposed \acs{SVRPG} does not make explicit use of the structure of the policy gradient framework, and it is independent of the underlying gradient estimate (\ie with or without baseline).
-This suggests that would be possible to integrate an ad-hoc \acs{SVRPG} baseline to further reduce the variance of the estimate.
-Since this composition is about the applicability of \acs{SVRG} technique to \acs{RL}, we consider this topic as future work.
-Additionally, the experiments show that \acs{SVRPG} has an advantage over G(PO)MPD even when the baseline is used (see the half-cheetah domain in \hyperref[chap:experiments]{Chapter 5}).
+In particular, the proposed \acs{SVRPG} does not make explicit use of the structure of the policy gradient framework, and it is independent of the underlying gradient estimate (\ie with or without baseline). Additionally, the experiments show that \acs{SVRPG} has an advantage over G(PO)MPD even when the baseline is used (see the half-cheetah domain in \hyperref[chap:experiments]{Chapter 5}).
 
 Concerning importance weighting techniques, \acs{RL} has made extensive use of them for off-policy problems~\citep[\eg][]{precup2000eligibility,thomas2015high}. However, as mentioned before, \acs{SVRPG} cannot be compared to such methods since it is in all respects an on-policy algorithm. Here, importance weighting is just a statistical tool used to preserve the unbiasedness of the corrected gradient.
 
@@ -29,7 +26,7 @@ Concerning importance weighting techniques, \acs{RL} has made extensive use of t
 \section{Discussion}
 \vspace{-0.05in}
 To summarize, in this composition, we introduced \acs{SVRPG}, a variant of \acs{SVRG} designed explicitly for \acs{RL} problems.
-The control problem considered in the composition has a series of difficulties that are not common in \acs{SL}.
+The control problem considered in this thesis has a series of difficulties that are not common in \acs{SL}.
 Among them, non-concavity and approximate estimates of the \acs{FG} have been analysed independently in \acs{SL}~\citep[\eg][]{allen2016variance,reddi2016stochastic,harikandeh2015stopwasting} but never combined.
 Nevertheless, the main issue in \acs{RL} is the non-stationarity of the sampling process since the distribution underlying the objective function is policy-dependent.
 We have shown that by exploiting importance weighting techniques, it is possible to overcome this issue and preserve the unbiasedness of the corrected gradient.
@@ -41,6 +38,8 @@ We have additionally shown that, under mild assumptions that are often verified 
 %\todomatout{Repetition of Section 6?}
 Finally, we have empirically shown that practical variants of the theoretical \acs{SVRPG} version can outperform classical actor-only approaches on benchmark tasks.
 Preliminary results support the effectiveness of \acs{SVRPG} also with a commonly used baseline for the policy gradient.
-Despite that, we believe that it will be possible to derive a baseline designed explicitly for \acs{SVRPG} to exploit the \acs{RL} structure and the \acs{SVRG} idea jointly. More precisely, in section \ref{subsec:actorcritic}, we said that the baseline parameters for \acs{SVRPG} are updated only every snapshot wasting lots of sub-teration trajectories, therefore would be of good impact on the baseline effectiveness finding a way to prevent this data waste.
-Another possible improvement would be to employ the natural gradient~\cite{kakade2002natural} to better control the effects of parameter updates on the variance of importance weights. Future work should also focus on making batch sizes $N$ and $B$ adaptive, as suggested in~\cite{papini2017adaptive}.
+Despite that, we believe that it will be possible to derive a baseline designed explicitly for \acs{SVRPG} to exploit the \acs{RL} structure and the \acs{SVRG} idea jointly.
+\section{Future Works}
+We have already mentioned that would be possible to integrate an ad-hoc \acs{SVRPG} baseline to further reduce the variance of the estimate, more precisely, in section \ref{subsec:actorcritic}, we said that the baseline parameters for \acs{SVRPG} are updated only every snapshot wasting lots of sub-teration trajectories, therefore would be of good impact on the baseline effectiveness finding a way to prevent this data waste. Since this composition is about the applicability of \acs{SVRG} technique to \acs{RL}, we consider this topic as future work.
+Another possible future development would be to employ the natural gradient~\cite{kakade2002natural} to better control the effects of parameter updates on the variance of importance weights. Future work should focus on making batch sizes $N$ and $B$ adaptive, as suggested in~\cite{papini2017adaptive} and also verify whether the variants proposed in section \ref{subsec:oge} can work or are doomed to fail.
 \vspace{-0.05in}
