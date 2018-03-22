@@ -8,7 +8,7 @@
 
 \section{Half-Cheetah Mujoco Task}
 \vspace{-0.05in}
-Here we present all the exploratory results for the two versions introduced in section \ref{subsec:oge} for what concert the Half-Cheetah task.
+Here we present all the exploratory results for the versions introduced in section \ref{subsec:oge} for what concern the Half-Cheetah task. In this scenario we can't beat the baseline policy gradient algorithm in any case nor reach its performance. The performance confidence intervals of G(PO)MDP against \acs{SVRPG} are also disjoint for nearly all the learning process.
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
@@ -109,7 +109,7 @@ Here we present all the exploratory results for the two versions introduced in s
 \clearpage
 \section{Swimmer Mujoco Task}
 \vspace{-0.05in}
-Here we present all the exploratory results for the two versions introduced in section \ref{subsec:oge} for what concert the Swimmer task.
+Here we present all the exploratory results for the versions introduced in section \ref{subsec:oge} for what concert the Swimmer task. As previously said, this task is simpler than half-cheetah (see the previous section), indeed, we have better results \wrt version B and BR. More precisely, if we have a look to figure \ref{fig:swimmerfive} we can see how the B version of \acs{SVRPG} without self-normalization is able, near the end of the learning process, to reach the performace of the baseline G(PO)MPD. Whereas, in figure \ref{fig:swimmersix} we see how \acs{SVRPG} BR is able, for a small fraction of the learning process, to outperform G(PO)MDP at least in terms of expected performance (the result, as you can see from the confidence interval, is not statistically significant). Unfortunately we still experience the ineffectiveness of \acs{SVRPG} C which, as we can see in figure \ref{fig:swimmerfour}, is not able to reach the baseline performance. If we try to use self normalization we experience a shrinkage over the performance \wrt the related non self normalized algorithm (see figures \ref{fig:swimmerthree}, \ref{fig:swimmerseven} and \ref{fig:swimmereight}).
 
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
@@ -217,7 +217,7 @@ Here we present all the exploratory results for the two versions introduced in s
 \vspace{-0.05in}
 \section{Cart-Pole Task}
 \vspace{-0.05in}
-Here we present all the exploratory results for the two versions introduced in section \ref{subsec:oge} for what concert the Cart-Pole task.
+Here we present all the exploratory results for the versions introduced in section \ref{subsec:oge} for what concert the Cart-Pole task. This is the simplest task we tackled in this composition, indeed, the versions which in the previous sections were nearly as good as the baseline G(PO)MDP now works perfectly. As we can see figure \ref{fig:cartpole1} shows \acs{SVRPG} B outperforming G(PO)MDP and the same holds for \acs{SVRPG} BR in figure \ref{fig:cartpole2}. Note that the BR version is better than our principal algorithm with this task. For what concern the \acs{SVRPG} C we still have inconclusive results as shown in figure \ref{fig:cartpole3}.
 
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}

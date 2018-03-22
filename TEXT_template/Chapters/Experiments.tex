@@ -225,7 +225,7 @@ The Swimmer task is a 3D continuous-control locomotion task over a plane. This t
 % Although the confidence intervals are never disjoint, the average of the self-normalized version is always higher, which we consider enough to employ the variant in the next comparison. 
 Figure \ref{fig:swimmerone} shows self-normalized \acs{SVRPG} against G(PO)MDP with batch size set to $10$. Our algorithm outperforms G(PO)MDP for almost the entire learning process. Here, toward the end of the learning process, we note that the improvement becomes statistically significant.
 
-For what concern figure \ref{fig:swimmer100}, where we have self-normalized \acs{SVRPG} versus G(PO)MDP with batch size set to $100$, we can se that our algorithm totally outperforms G(PO)MDP and the difference in performaces is also statistically significant.
+For what concern figure \ref{fig:swimmer100}, where we have self-normalized \acs{SVRPG} versus G(PO)MDP with batch size set to $100$, we can see that our algorithm totally outperforms G(PO)MDP and the difference in performaces is also statistically significant.
 
 Table \ref{tab:1} compares G(PO)MDP and \acs{SVRPG} in terms of the average return computed on the whole learning process, which is a common metric for online learning since it is related to an average regret~\citep[\eg][]{duan2016benchmarking}. This metric can be visualized as the area below the curves. Note that the convergence result in Theorem \ref{theo:convergence} is precisely about the average return. We also report normalized standard deviations and 90\% $t$-confidence intervals.
 In both tasks, our algorithm has higher average return and lower normalized standard deviation.
@@ -238,13 +238,21 @@ In Cart-pole, disjoint confidence intervals show that the advantage is statistic
 	\centering
 	\begin{tabular}{@{}lccccccc@{}} 
 		\toprule
-		\phantom{abc} & \multicolumn{3}{c}{G(PO)MDP} \\
+		\phantom{abc} & \multicolumn{3}{c}{G(PO)MDP $10$} \\
 		\cmidrule{2-4}
 		\phantom{abc} & Avg Return & Norm. Std & C.I.
 		\\\cmidrule{2-4}
 		Cart-pole & $618.49$ & $21.09$ & $[579.82, 657.16]$\\
 		Swimmer & $45.10$ & $2.37$ & $[40.13, 50.07]$\\
 		Half-cheetah & $1263.59$ & $212.73$ & $[810.09, 1717.09]$\\
+		\\\cmidrule{2-4}
+		\phantom{abc} & \multicolumn{3}{c}{G(PO)MDP $100$} \\
+		\cmidrule{2-4}
+		\phantom{abc} & Avg Return & Norm. Std & C.I.
+		\\\cmidrule{2-4}
+		Cart-pole & $608.78$ & $28.66$ & $[556.23, 661.33]$\\
+		Swimmer & $20.03$ & $2.56$ & $[15.61, 24.46]$\\
+		Half-cheetah & $966.59$ & $173.14$ & $[597.49, 1335.69]$\\
 		\\\cmidrule{2-4}
 		\phantom{abc} & \multicolumn{3}{c}{SVRPG}
 		\\\cmidrule{2-4}
@@ -271,6 +279,7 @@ b(s_t,a_t) = \boldsymbol{\lambda}^T\vphi(s_t,t).
 The baseline is fitted from scratch at each policy gradient iteration, with least squares, to match state-value function $V^{\pi}(s)$.
 When used with \acs{SVRPG}, the critic parameter $\boldsymbol{\lambda}$ is updated only at the snapshot. Table \ref{tab:1} shows promising results, meaning that a combination of the baseline usage and \acs{SVRG}-like variance reduction can yield an improvement that the two techniques alone are not able to achieve. For a more thorough evaluation on Half-Cheetah, together with table \ref{tab:1}, also see figure \ref{fig:hcone} and figure \ref{fig:hctwo}. In the former figure we see how our algorithm has a lot less variance and a higher mean even though the confidence intervals are not disjoint. Whereas in the latter figure we can clearly see how the self-normalization can improve the performance of our algorithm. Furthermore, for completeness, we also show in figure \ref{fig:hc100} G(PO)MPD with batch size set to $100$ against \acs{SVRPG}. Here our algorithm has a better performance accross all the learning process. More over this difference becomes statistically significant after half of the learning process itself. 
 \begin{figure*}[h]
+	\vspace{1in}
 	\begin{minipage}[h]{1\textwidth}
 		\centering
 		\includegraphics[width=0.75\textwidth]{Images/Experiments/half_cheetah_Self_Normalized_SVRPG_vs_GPOMDP.pdf}
@@ -322,7 +331,7 @@ where the sampling distribution is $\pi_{\wt{\vtheta}}$ for the mini-batch terms
 		\right]
 \end{align}
 where the sampling distribution is $\pi_{\vtheta_t}$ for the mini-batch terms.\newline
-Since equation \ref{E:svrpg.b.version} has $\pi_{\wt{\vtheta}}$ as sampling distribution in the sub-terations, we can avoid sampling from the environment randomly picking $B$ trajectories from those ones obtained for the snapshot. In this way we save a lot of data. Whereas equation \ref{E:svrpg.c.version} has the importance weights binded to the term with $N$ trajectories, which better shrinks the variance contribution of the weights themselves \wrt when they were binded to the term with $B$ trajectories. From now on we refer to our algorithm based on equation \ref{E:svrpg.b.version} as B version if it doesn't reuse the trajectories of the snapshot and BR if it does, whereas we refer to our algorithm based on equation \ref{E:svrpg.c.version} as C version.\newline
+Since equation \ref{E:svrpg.b.version} has $\pi_{\wt{\vtheta}}$ as sampling distribution in the sub-terations, we can avoid sampling from the environment randomly picking $B$ trajectories from those ones obtained for the snapshot. In this way we save a lot of data. Note that in this way we have introduced a bias which, however, is legitimated by the huge data saving. Whereas equation \ref{E:svrpg.c.version} has the importance weights binded to the term with $N$ trajectories, which better shrinks the variance contribution of the weights themselves \wrt when they were binded to the term with $B$ trajectories. From now on we refer to our algorithm based on equation \ref{E:svrpg.b.version} as B version if it doesn't reuse the trajectories of the snapshot and BR if it does, whereas we refer to our algorithm based on equation \ref{E:svrpg.c.version} as C version.\newline
 The results coming from the usage of these new estimators within our algorithm are not satisfying except for the equation \ref{E:svrpg.b.version} version in cart-pole (see \hyperref[chap:appendix]{Appendix A} for the experimental results). These outcomes are due to the fact that the work performed in these directions is currently at an early stage and would need a more thoughtful approach in order to have a chance to make them properly work in practice.
 
 \vspace{-0.05in}
