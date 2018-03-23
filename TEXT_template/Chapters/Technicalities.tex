@@ -40,7 +40,7 @@ Solving an \acs{MDP} $M$ means finding $\pi^* \in \argmax_{\pi} \{J(\pi)\}$.
 Policy gradient methods restrict the search for the best performing policy over a class of parametrized policies $\Pi_{\vtheta}=\{\pol: \vtheta \in \realspace^d\}$, with the only constraint that $\pol$ is differentiable \wrt $\vtheta$. For sake of brevity, we will denote the performance of a parametric policy with $J(\vtheta)$ and the probability of a trajectory $\tau$ with $p(\tau|\vtheta)$ (in some occasions, $p(\tau|\vtheta)$ will be replaced by $p_{\vtheta}(\tau)$ for the sake of readability).
 The search for a locally optimal policy is performed through gradient ascent, where the policy gradient
 %of $J(\vtheta)$ \wrt the policy parameters 
-is \citep{sutton2000policy, Peters2008reinf}:
+is \citep{sutton2000policy, peters2008reinforcement}:
 \begin{align} \label{E:policygradient}
 	\gradJ{\vtheta} = \EVV[\tau \sim p(\cdot|\vtheta)]{\score{\vtheta}{\tau}\Reward(\tau)}.
 	%\int_{\Tspace}\pol(\tau)\score{\vtheta}{\tau}\Reward(\tau)\de \tau.
@@ -120,7 +120,7 @@ whereas the G(PO)MDP off-policy estimator is defined as follows \citep{mastrange
 \subsection{Considerations on Policy Gradient}
 The main limitation of plain policy gradient is the high variance of the estimator as defined in equation \ref{E:policygradient.estimate}.
 The na\"ive approach of increasing the batch size is not an option in \acs{RL} due to the high cost of collecting samples, \ie by interacting with the environment.
-For this reason, literature has focused on the introduction of baselines (\ie functions $b : \mathcal{S} \times \mathcal{A} \to \realspace$) aiming at reducing the variance of the above mentioned estimator~\citep[\eg][]{williams1992simple,Peters2008reinf,Thomas2017actionbaseline,wu2018variance}.
+For this reason, literature has focused on the introduction of baselines (\ie functions $b : \mathcal{S} \times \mathcal{A} \to \realspace$) aiming at reducing the variance of the above mentioned estimator~\citep[\eg][]{williams1992simple,peters2008reinforcement,Thomas2017actionbaseline,wu2018variance}.
 These baselines are usually designed to minimize the variance of the gradient estimate, but even them need to be estimated from data, partially reducing their effectiveness.
 On the other hand, there has been a surge of recent interest in variance reduction techniques for gradient optimization in supervised learning (\acs{SL}).
 Although these techniques have been mainly derived for finite-sum problems, we will show in \hyperref[chap:svrpg]{Chapter 3} how they can be used in \acs{RL}.
