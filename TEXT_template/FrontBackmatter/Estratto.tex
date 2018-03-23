@@ -11,12 +11,26 @@
 \let\cleardoublepage\relax
 
 \chapter*{Estratto}
-In molti settori, come ad esempio nel campo dell'automazione, della ricerca operativa o della robotica, esistono compiti complessi che non possono essere risolti tramite formule matematiche già pronte all'uso, ma la soluzione deve essere appresa sfruttando l'esperienza che l'individuo ha del problema specifico.
- L'apprendimento per rinforzo ha come obiettivo quellodi fornire ad un agente artificiale tecniche per scegliere in maniera automatica il comportamento migliore da utilizzare per eseguire efficacemente un certo compito di controllo. Nello specifico l'agente non ha una conoscenza completa del problema e non necessita di un modello per rappresentarne le dinamiche interne poiché è in grado di interagire e modificare l'ambiente attraverso un certo numero di azioni e di ricevere da esso segnali di rinforzo che sono indici della bontà delle sue scelte.
-L'agente deve decidere quale azione sia meglio utilizzare in ogni possibile situazione, o stato, per massimizzare il valore dei rinforzi accumulati, cioè quello che è chiamato ritorno totale.
-La politica dell'agente è quell'insieme di parametri che permettono all'agente, dato un particolare stato, di scegliere probabilisticamente una certa azione.
+\begin{otherlanguage}{italian}
+In molti settori, come ad esempio nel campo dell'automazione, della ricerca operativa o della robotica, esistono compiti complessi che non possono essere risolti tramite formule matematiche gi\'a pronte all'uso: la soluzione deve essere appresa sfruttando l'esperienza che un generico individuo ha del problema specifico.\newline
+ L'apprendimento per rinforzo ha come obiettivo quello di fornire ad un agente artificiale tecniche per scegliere in maniera automatica il comportamento migliore da utilizzare per eseguire efficacemente un certo compito di controllo. Nello specifico l'agente non ha una conoscenza completa del problema e non necessita di un modello per rappresentarne le dinamiche interne poich\'e \'e in grado di interagire e modificare l'ambiente attraverso un certo numero di azioni e di ricevere da esso segnali di rinforzo che sono indici della bont\'a delle sue scelte.
+L'agente deve decidere quale azione sia meglio utilizzare in ogni possibile situazione, che da ora in poi verr\'a chiamato stato, per massimizzare il valore dei rinforzi accumulati, cio\'e quello che \'e chiamato ritorno totale.
+La politica dell'agente \'e quell'insieme di parametri che permettono all'agente, dato un particolare stato, di scegliere, da una specifica distribuzione statistica, una certa azione.
 In particolare, nei controlli robotici, il numero di azioni possibili, come il numero degli stati, può essere illiminato. 
-In questo caso vengono utilizzati degli algoritmi che vanno a massimizzare direttamente la politica senza creare un modello del problema.
+In questo caso vengono utilizzati degli algoritmi che vanno a migliorare direttamente la politica senza creare un modello del problema. 
+Questo approccio \'e il pi\'u efficente ed ha avuto buoni risultati in problemi complessi, come ampiamente dimostrato in letteratura. I pi\'u noti di questa famiglia di algoritmi sono REINFORCE o GPOMDP.
+Questi metodi si basano sull'aggiornamento della politica seguendo, di passo in passo, il gradiente della funzione di guadagno.
+Per stimare correttamente il gradiente si dovrebbero provare tutti i possibili casi in cui un agente si può trovare; ci\'o \'e impossibile in quanto significa provare infinite possibilit\'a.
+In questa situazione si procede con la stima del gradiente a partire da un sottoinsieme dei possibili casi, andando a calcolare quello che \'e chiamato gradiente stocastico.
+Questa stima del gradiente, nell'ambito dell'apprendimento per rinforzo, presenta una elevata varianza. 
+Andare ad aumentare il sottoinsieme di dati della stima \'e controproducente in quanto il campionamento dei dati \'e molto oneroso.\newline
+Questa tesi presenta uno studio dell'applicazione di una tecnica, chiamata SVRG, finora applicata solo nel contesto di apprendimento supervisionato, nel campo dell'apprendimento per rinforzo. 
+Il principio di SVRG, nell'ambito di apprendimento supervisionato, \'e quello di calcolare il gradiente esatto in un passo, e in un numero limitato di passi successivi diminuire la varianza del gradiente stocastico sfruttando la correlazione con il gradiente esatto di uno dei passi precedenti.\newline
+L'adattamento di questa tecnica nell'ambito dell'apprendimento per rinforzo prevede diverse sfide da affrontare: come riportato prima non \'e possibile stimare il gradiente corretto, ma dobbiamo considerare una stima, utilizzando un gradiente stocastico con un insieme pi\'u ampio di dati, la funzione di guadagno non \'e concava (questi due problemi sono gi\'a stati affrontati in letteratura separatamente ma mai considerati assieme); infine, la distribuzione dei dati di campionamento non \'e stazionaria, ma cambia al cambiare della politica. \newline
+Sotto queste assunzioni siamo riusciti a dimostrare la convergenza, a regime, del nostro algoritmo ad un ottimo o subottimo con un costo dovuto all'approssimazione del gradiente corretto e un costo dovuto alla correzione della non stazionariet\'a della distribuzione.\newline
+Abbiamo sviluppato un modello empirico del nostro algoritmo, affrontando tutte le sfide pratiche del caso. Abbiamo confrontato il nostro algoritmo con il classico metodo che utilizza il gradiente stocastico in tre problemi noti in letteratura. I risultati ottenuti sono tutti soddisfacenti, in quanto la prestazione del nostro algoritmo è sempre migliore rispetto al metodo classico. \newline
+Il nostro lavoro apre un'ampia possibilità di sviluppi futuri.
+\end{otherlanguage}
 
 \endgroup
 
