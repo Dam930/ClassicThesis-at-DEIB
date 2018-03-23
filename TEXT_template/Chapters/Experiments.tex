@@ -106,8 +106,8 @@ Q^{PDW} = \frac{\sum_{h=0}^H  \left(\gamma^h r_h^n - b(z_h^n)\right) \omega(z_{0
 \]
 Now we can defined the G(PO)MDP estimator as:
 \[
-\nabla J(\pi^T) = \sum_{n=1}^{N}
-	\sum_{h=0}^H \left(\sum_{k=0}^h \nabla \log\pi^T(z_k^n)\right) Q^{PDW}_n .
+\nabla J(\pi^T) = \sum_{n=1}^{N} Q^{PDW}_n
+	\sum_{h=0}^H \left(\sum_{k=0}^h \nabla \log\pi^T(z_k^n)\right) .
 \]
 \newline
 In the next section we also show empirically that self-normalization can provide a performance improvement.
