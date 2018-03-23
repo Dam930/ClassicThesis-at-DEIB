@@ -30,16 +30,18 @@ The control problem considered in this thesis has a series of difficulties that 
 Among them, non-concavity and approximate estimates of the \acs{FG} have been analysed independently in \acs{SL}~\citep[\eg][]{allen2016variance,reddi2016stochastic,harikandeh2015stopwasting} but never combined.
 Nevertheless, the main issue in \acs{RL} is the non-stationarity of the sampling process since the distribution underlying the objective function is policy-dependent.
 We have shown that by exploiting importance weighting techniques, it is possible to overcome this issue and preserve the unbiasedness of the corrected gradient.
-We have additionally shown that, under mild assumptions that are often verified in \acs{RL} applications, it is possible to derive convergence guarantees for \acs{SVRPG}.
+We have additionally shown that, under mild assumptions that are often verified in \acs{RL} applications, it is possible to derive convergence guarantees for \acs{SVRPG} to a local optimum with some degree of approximation which depends on two constants, the first related to the unavoidable approximation of the \acs{FG} and the second one related to the non stationarity of the sampling process, hence associated to the approximation coming from the usage of the importance weighting technique.
 %{\color{red}SVRG has been previously used in RL for policy evaluation~\citep{du2017svrgpe} and as alternative optimization method for TRPO~\citep{xu2017svrgtrpo}.
 %The first case is much more similar to the SL case since the problem is stationary and may be made concave, removing several issues we have faced here.
 %In the second case, it was used as a better optimization technique to solve the per-iteration problem imposed by TRPO.
 %}
 %\todomatout{Repetition of Section 6?}
+\newline
+An additional difficulty lies within the hyper-parametrization of our algorithm. In other words, it is not easy to find the best hyper-parameters for the problem considered.
 Finally, we have empirically shown that practical variants of the theoretical \acs{SVRPG} version can outperform classical actor-only approaches on benchmark tasks.
 Preliminary results support the effectiveness of \acs{SVRPG} also with a commonly used baseline for the policy gradient.
 Despite that, we believe that it will be possible to derive a baseline designed explicitly for \acs{SVRPG} to exploit the \acs{RL} structure and the \acs{SVRG} idea jointly.
 \section{Future Works}
 We have already mentioned that would be possible to integrate an ad-hoc \acs{SVRPG} baseline to further reduce the variance of the estimate, more precisely, in section \ref{subsec:actorcritic}, we said that the baseline parameters for \acs{SVRPG} are updated only every snapshot wasting lots of sub-teration trajectories, therefore would be of good impact on the baseline effectiveness finding a way to prevent this data waste. Since this composition is about the applicability of \acs{SVRG} technique to \acs{RL}, we consider this topic as future work.
-Another possible future development would be to employ the natural gradient~\citep{kakade2002natural} to better control the effects of parameter updates on the variance of importance weights. Future work should focus on making batch sizes $N$ and $B$ adaptive, as suggested in~\cite{papini2017adaptive} and also verify whether the variants proposed in section \ref{subsec:oge} can work or are doomed to fail.
+Another possible future development would be to employ the natural gradient~\cite{kakade2002natural} to better control the effects of parameter updates on the variance of importance weights. Future work should focus on making batch sizes $N$ and $B$ adaptive, as suggested in~\cite{papini2017adaptive} and also verify whether the variants proposed in section \ref{subsec:oge} can work or are doomed to fail.
 \vspace{-0.05in}
