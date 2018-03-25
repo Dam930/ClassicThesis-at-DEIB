@@ -99,12 +99,12 @@ To introduce self-normalization in the context of our algorithm, we switch from 
 \end{align*}
 where $\Omega = \sum_{i=0}^{B-1}\omega(\tau_i|\vtheta_t, \wt{\vtheta})$.
 \newline
-In experiment we use "Per-Decision Importance Weights", reported by the paper of \cite[\eg][]{precup2000eligibility} that extends the Normalized Importance Sampling idea in the G(PO)MDP context. 
+In the experiments we use the per-decision importance weights, as reported by \cite[\eg][]{precup2000eligibility} that extends the normalized importance sampling idea in the G(PO)MDP context. 
 The weighted per-decision importance sampling estimator is defined as:
 \[
 Q^{PDW} = \frac{\sum_{h=0}^H  \left(\gamma^h r_h^n - b(z_h^n)\right) \omega(z_{0:h}|\pi^B,\pi^T)}{\sum_{h=0}^H \gamma^h \omega(z_{0:h}|\pi^B,\pi^T)}.
 \]
-Now we can defined the G(PO)MDP estimator as:
+Therefore, we can define the G(PO)MDP estimator as:
 \[
 \nabla J(\pi^T) = \sum_{n=1}^{N} Q^{PDW}_n
 	\sum_{h=0}^H \left(\sum_{k=0}^h \nabla \log\pi^T(z_k^n)\right) .
@@ -123,6 +123,7 @@ For our algorithm, we use a batch size $N=100$, a mini-batch size $B=10$, and th
 In all the experiments we used deep Gaussian policies with adaptive standard deviation.
 The swimmer experiment is run $20$ times with a random policy initialization and seed, but this initialization is shared among the algorithms under comparison. Cart-pole and half-cheetah are performed in the same way except for the number of times each experiment is run: $10$ times for the former and $5$ times for the latter. The length of the experiment, \ie the total number of trajectories, is fixed for each task. Performance is evaluated by using test-trajectories on a subset of the policies considered during the learning process. We provide average performance with 90\% bootstrap confidence intervals.  
 Task implementations are from the \textit{rllab} library \citep{duan2016benchmarking}, on which our agents are also based.\footnote{rllab can be found at \url{https://github.com/rll/rllab}}
+
 More details on meta-parameters and exhaustive task descriptions are now provided before reporting the actual results of our work:
 \begin{enumerate}
 	\item \emph{Cart-Pole Balancing} : an inverted pendulum mounted on a cart must be kept standing by moving the cart backward or forward (see figure \ref{fig:cartpoletask});4-dimensional state space: cart position x, pole angle $\theta$, cart velocity $\dot{x}$ and pole velocity $\dot{\theta}$; 1-dimensional action space: the horizontal force applied to the cart body. Reward function  is defined as $r(s, a) := 10 - (1 - cos(\theta)) - 10^{-5}\norm[] a^2$. The episodes terminate when $|x|>2.4$ or $|\theta|>0.2$ or the number of time steps T is greater than 100. This is a continuous variant of the Cart-Pole task of \cite{sutton1998reinforcement}.
@@ -155,6 +156,7 @@ All the parameters used in the experiments, including neural network architectur
 
 \begin{table}[H]\caption{Parameters used in the experiments. Where not specified, meta-parameters are shared among G(PO)MDP and SVRPG.}\label{table:metaparams}
 	\centering
+	\resizebox{\columnwidth}{1.4in}{
 	\begin{tabular}{| l | c  c  c |}
 		\hline	
 		& Cart-Pole & Swimmer & Half Cheetah \\
@@ -175,15 +177,16 @@ All the parameters used in the experiments, including neural network architectur
 		Total number of trajectories& 10000 & 20000 & 50000 \\
 		\hline  
 	\end{tabular}
+	}
 \end{table}
 Let us be a little bit more precise about the neural network role: given an observation it will predict mean and standard deviation of the gaussian distribution from which we will need to sample our action. Refer to \cite{duan2016benchmarking} for more details about G(PO)MDP (REINFORCE in the paper) on the Half Cheetah task.
 
 
-Now we can properly anddress the main results of our work. Figure \ref{fig:cartpole} compares \acs{SVRPG} versus G(PO)MDP with batch size set to $10$ on a continuous variant of the classical Cart-pole task, which is a 2D balancing task. Despite using more trajectories on average for each parameter update, our algorithm shows faster convergence, which can be ascribed to the better quality of updates due to variance reduction. The same can be said \wrt figure \ref{fig:cartpole100} where we see \acs{SVRPG} versus G(PO)MDP with batch size set to $100$.
+Now we can properly anddress the main results of our work. Figure \ref{fig:cartpole} compares \acs{SVRPG} versus G(PO)MDP with batch size set to $10$ on a continuous variant of the classical Cart-pole task, which is a 2D balancing task. Despite using more trajectories on average for each parameter update, our algorithm shows faster convergence, which can be ascribed to the better quality of updates due to variance reduction. The same can be said \wrt figure \ref{fig:cartpole100}.
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
-		\includegraphics[width=0.75\textwidth]{Images/Experiments/cart_pole_SVRPG_vs_GPOMDP_tex.pdf}
+		\includegraphics[width=0.65\textwidth]{Images/Experiments/cart_pole_SVRPG_vs_GPOMDP_tex.pdf}
 		\vspace{-0.1in}
 		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP (batch size set to 10) in the Cart-pole task, with 90\% confidence intervals.}
 		\label{fig:cartpole}
@@ -193,7 +196,7 @@ Now we can properly anddress the main results of our work. Figure \ref{fig:cartp
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
-		\includegraphics[width=0.75\textwidth]{Images/Experiments/cart_pole_GPOMDP_100_vs_SVRPG.pdf}
+		\includegraphics[width=0.65\textwidth]{Images/Experiments/cart_pole_GPOMDP_100_vs_SVRPG.pdf}
 		\vspace{-0.1in}
 		\caption{On-line performance over sampled trajectories of \acs{SVRPG} vs G(PO)MDP (batch size set to 100) in the Cart-pole task, with 90\% confidence intervals.}
 		\label{fig:cartpole100}
@@ -206,7 +209,7 @@ The Swimmer task is a 3D continuous-control locomotion task over a plane. This t
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
-		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_self_normalized_SVRPG_vs_SVRPG_tex.pdf}
+		\includegraphics[width=0.65\textwidth]{Images/Experiments/swimmer_self_normalized_SVRPG_vs_SVRPG_tex.pdf}
 		\vspace{-0.1in}
 		\caption{On-line performance over sampled trajectories of self-Normalized \acs{SVRPG} vs unbiased \acs{SVRPG} in the Swimmer task, with 90\% confidence intervals.}
 		\label{fig:swimmertwo}
@@ -218,7 +221,7 @@ The Swimmer task is a 3D continuous-control locomotion task over a plane. This t
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
-		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_self_normalized_SVRPG_vs_GPOMDP_tex.pdf}
+		\includegraphics[width=0.65\textwidth]{Images/Experiments/swimmer_self_normalized_SVRPG_vs_GPOMDP_tex.pdf}
 		\vspace{-0.1in}
 		\caption{On-line performance over sampled trajectories of self-Normalized \acs{SVRPG} vs G(PO)MDP (batch size set to 10) in the Swimmer task, with 90\% confidence intervals}
 		\label{fig:swimmerone}
@@ -228,7 +231,7 @@ The Swimmer task is a 3D continuous-control locomotion task over a plane. This t
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
-		\includegraphics[width=0.75\textwidth]{Images/Experiments/swimmer_GPOMDP_100_vs_SN_SVRPG.pdf}
+		\includegraphics[width=0.65\textwidth]{Images/Experiments/swimmer_GPOMDP_100_vs_SN_SVRPG.pdf}
 		\vspace{-0.1in}
 		\caption{On-line performance over sampled trajectories of self-Normalized \acs{SVRPG} vs G(PO)MDP (batch size set to 100) in the Swimmer task, with 90\% confidence intervals}
 		\label{fig:swimmer100}
@@ -292,40 +295,36 @@ b(s_t,a_t) = \boldsymbol{\lambda}^T\vphi(s_t,t).
 The baseline is fitted from scratch at each policy gradient iteration, with least squares, to match state-value function $V^{\pi}(s)$.
 When used with \acs{SVRPG}, the critic parameter $\boldsymbol{\lambda}$ is updated only at the snapshot. Table \ref{tab:1} shows promising results, meaning that a combination of the baseline usage and \acs{SVRG}-like variance reduction can yield an improvement that the two techniques alone are not able to achieve. For a more thorough evaluation on Half-Cheetah, together with table \ref{tab:1}, also see figure \ref{fig:hcone} and figure \ref{fig:hctwo}. In the former figure we see how our algorithm has a lot less variance and a higher mean even though the confidence intervals are not disjoint. Whereas in the latter figure we can clearly see how the self-normalization can improve the performance of our algorithm. Furthermore, for completeness, we also show in figure \ref{fig:hc100} G(PO)MPD with batch size set to $100$ against \acs{SVRPG}. Here our algorithm has a better performance accross all the learning process. More over this difference becomes statistically significant after half of the learning process itself. 
 \begin{figure*}[h]
-	\vspace{1in}
 	\begin{minipage}[h]{1\textwidth}
 		\centering
-		\includegraphics[width=0.75\textwidth]{Images/Experiments/half_cheetah_Self_Normalized_SVRPG_vs_GPOMDP.pdf}
+		\includegraphics[width=0.65\textwidth]{Images/Experiments/half_cheetah_Self_Normalized_SVRPG_vs_GPOMDP.pdf}
 		\vspace{-0.1in}
 		\caption{On-line performance over sampled trajectories of self-Normalized \acs{SVRPG} vs G(PO)MDP (batch size set to 10) in the Half-Cheetah task, with 90\% confidence intervals}
 		\label{fig:hcone}
 	\end{minipage}
 	\vspace{-0.15in}
 \end{figure*}
-
 \begin{figure*}[h]
 	\begin{minipage}[h]{1\textwidth}
 		\centering
-		\includegraphics[width=0.75\textwidth]{Images/Experiments/half_cheetah_GPOMDP_100_vs_SN_SVRPG.pdf}
+		\includegraphics[width=0.65\textwidth]{Images/Experiments/half_cheetah_GPOMDP_100_vs_SN_SVRPG.pdf}
 		\vspace{-0.1in}
 		\caption{On-line performance over sampled trajectories of self-Normalized \acs{SVRPG} vs G(PO)MDP (batch size set to 100) in the Half-Cheetah task, with 90\% confidence intervals}
 		\label{fig:hc100}
 	\end{minipage}
 	\vspace{-0.15in}
 \end{figure*}
-\newpage
-
-\begin{figure*}[h]
-	\begin{minipage}[h]{1\textwidth}
+\begin{figure*}[t]
+	\begin{minipage}[t]{1\textwidth}
 		\centering
-		\includegraphics[width=0.75\textwidth]{Images/Experiments/half_cheetah_SVRPG_vs_SN_SVRPG.pdf}
+		\includegraphics[width=0.65\textwidth]{Images/Experiments/half_cheetah_SVRPG_vs_SN_SVRPG.pdf}
 		\vspace{-0.1in}
 		\caption{On-line performance over sampled trajectories of self-Normalized \acs{SVRPG} vs unbiased \acs{SVRPG} in the Half-Cheetah task, with 90\% confidence intervals.}
 		\label{fig:hctwo}
 	\end{minipage}
 	\vspace{-0.15in}
 \end{figure*}
-
+\newpage
 \subsection{Exploratory Results on Other Gradient Estimators}\label{subsec:oge}
 Another preliminary attempt was made using different gradient estimators in our algorithm. Therefore equation \eqref{E:svrpg.estimate.batch} has been rearranged in order to get new gradient estimators. Here we report the obtained expressions:
 
